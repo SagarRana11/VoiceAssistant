@@ -1,0 +1,97 @@
+# TTS Text-to-IDs API Server
+
+Converts raw text into integer IDs that your on-device TFLite FastSpeech model expects.
+
+## Setup & Run
+
+```bash
+# Install dependencies
+pip install -r server_requirements.txt
+
+# Make sure TensorFlowTTS is installed
+git clone https://github.com/TensorSpeech/TensorFlowTTS.git
+cd TensorFlowTTS && pip install . && cd ..
+
+# Start the server
+python api_server.py
+```
+
+Server runs at `http://localhost:5000`
+
+## Endpoints
+
+### POST /text2ids
+Converts text to integer IDs.
+
+**Request:**
+```json
+{"text": "Hello, how are you?"}
+```
+
+**Response:**
+```json
+{
+  "input_ids": [56, 27, 82, 82, 91, ...],
+  "length": 25,
+  "text": "Hello, how are you?"
+}
+```
+
+### GET /health
+Returns server status.
+
+## Test It
+
+```bash
+# Health check
+curl http://localhost:5000/health
+
+# Convert text to IDs
+curl -X POST http://localhost:5000/text2ids \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello, how are you?"}'
+```
+
+## Auto-Generated API Docs
+
+Once the server is running, visit:
+- Swagger UI: http://localhost:5000/docs
+- ReDoc: http://localhost:5000/redoc
+
+## Run with Docker
+
+```bash
+docker build -t tts-api .
+docker run -p 5000:5000 tts-api
+```
+
+## Mobile Client Examples
+
+### Android (Kotlin)
+```kotlin
+val json = JSONObject().put("text", "Hello world")
+val body = json.toString().toRequestBody("application/json".toMediaType())
+val request = Request.Builder()
+    .url("http://YOUR_SERVER_IP:5000/text2ids")
+    .post(body)
+    .build()
+
+val response = client.newCall(request).execute()
+val ids = JSONObject(response.body!!.string()).getJSONArray("input_ids")
+// Feed ids into TFLite interpreter
+```
+
+### iOS (Swift)
+```swift
+let json = ["text": "Hello world"]
+var request = URLRequest(url: URL(string: "http://YOUR_SERVER_IP:5000/text2ids")!)
+request.httpMethod = "POST"
+request.httpBody = try JSONSerialization.data(withJSONObject: json)
+request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+URLSession.shared.dataTask(with: request) { data, _, _ in
+    let result = try JSONSerialization.jsonObject(with: data!) as! [String: Any]
+    let inputIds = result["input_ids"] as! [Int]
+    // Feed inputIds into TFLite interpreter
+}.resume()
+```

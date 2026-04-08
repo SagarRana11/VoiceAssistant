@@ -1,0 +1,8 @@
+#!/bin/sh
+'''exec' "/Users/ggn07581/Desktop/Projects/Voice Assistant/backend/venv/bin/python3.11" "$0" "$@"
+' '''
+import sys
+from onnx.backend.test.cmd_tools import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
