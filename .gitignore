@@ -1,7 +1,7 @@
 backend/node_modules
-backend/env
+backend/.env
 frontend/node_modules
-frontend/env
+frontend/.env
 mobile/node_modules
 mobile/ios/pods
 mobile/android
