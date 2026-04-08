@@ -1,0 +1,173 @@
+.bar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(12, 12, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  z-index: 1000;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.bar.listening {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(239, 68, 68, 0.15);
+}
+
+.bar.locked {
+  opacity: 0.6;
+}
+
+/* Listening wave */
+.wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.waveBar {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: #ef4444;
+  animation: waveAnim 0.9s ease-in-out infinite;
+}
+
+.waveBar:nth-child(1) { height: 6px;  animation-delay: 0s; }
+.waveBar:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+.waveBar:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+.waveBar:nth-child(4) { height: 12px; animation-delay: 0.3s; }
+.waveBar:nth-child(5) { height: 6px;  animation-delay: 0.4s; }
+
+@keyframes waveAnim {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1);   }
+}
+
+/* Mic button */
+.micBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 18px;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.micBtn:hover:not(.micDisabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.micActive {
+  color: #ef4444 !important;
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+
+.micDisabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+/* Text input */
+.input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* Send button */
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.sendBtn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.08);
+}
+
+.sendBtn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Speaking indicator pill inside the bar */
+.speakingPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #a5b4fc;
+  flex-shrink: 0;
+}
+
+.speakingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6366f1;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+@media (max-width: 480px) {
+  .bar { bottom: 12px; padding: 8px 12px; width: calc(100% - 16px); }
+}

@@ -5,3 +5,5 @@ frontend/.env
 mobile/node_modules
 mobile/ios/pods
 mobile/android
+
+backend/venv/

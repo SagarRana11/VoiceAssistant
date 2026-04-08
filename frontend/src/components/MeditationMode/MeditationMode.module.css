@@ -1,0 +1,227 @@
+/* Fullscreen meditation mode */
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #0d0921 0%, #050510 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  z-index: 2000;
+  padding: 0 1.5rem 2rem;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0 0;
+}
+
+.headerTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.exitBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.exitBtn:hover { color: #e2e8f0; background: rgba(255,255,255,0.08); }
+
+/* Breath circle */
+.breathContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.breathCircle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0.08) 70%);
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  box-shadow:
+    0 0 40px rgba(139, 92, 246, 0.2),
+    inset 0 0 30px rgba(139, 92, 246, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  /* transition overridden inline for animation */
+}
+
+.breathPhaseLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #a78bfa;
+  letter-spacing: 0.04em;
+}
+
+.breathCount {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #c4b5fd;
+  line-height: 1;
+}
+
+/* Step card */
+.stepCard {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(139, 92, 246, 0.06);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+
+.stepMeta {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.stepTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 0.4rem;
+}
+
+.stepInstruction {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Progress bar */
+.progressContainer {
+  width: 100%;
+  max-width: 560px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  border-radius: 999px;
+  transition: width 0.5s linear;
+}
+
+/* Timer */
+.timerRow {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #475569;
+  margin-top: -0.75rem;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.controlBtn {
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.controlBtn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.primaryBtn {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+}
+
+.pauseBtn {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+}
+
+.secondaryBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+/* Music hint */
+.musicHint {
+  font-size: 0.78rem;
+  color: #475569;
+  text-align: center;
+}
+
+/* Session done */
+.doneCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex: 1;
+  text-align: center;
+}
+
+.doneIcon { font-size: 4rem; }
+
+.doneTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.doneText {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  max-width: 340px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.doneBtn {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.doneBtn:hover { opacity: 0.88; }

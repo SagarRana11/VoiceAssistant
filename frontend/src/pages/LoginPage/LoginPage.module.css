@@ -1,0 +1,240 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f7;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background orbs */
+.orb1 {
+  position: absolute;
+  top: -120px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.orb2 {
+  position: absolute;
+  bottom: -100px;
+  right: -100px;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Card ───────────────────────────────────────────────────────────────── */
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 1;
+  animation: cardIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Brand ──────────────────────────────────────────────────────────────── */
+.brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brandIcon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #0071e3 0%, #5ac8fa 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.3);
+}
+
+.brandName {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #1d1d1f;
+  margin: 0 0 8px;
+}
+
+.tagline {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ─── Form ───────────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.01em;
+}
+
+.input {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1d1d1f;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #0071e3;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.input::placeholder {
+  color: #94a3b8;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
+/* ─── Submit button ──────────────────────────────────────────────────────── */
+.submitBtn {
+  height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #0071e3 0%, #5ac8fa 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.4);
+  filter: brightness(1.05);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Toggle ─────────────────────────────────────────────────────────────── */
+.toggle {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #0071e3;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.toggleBtn:hover {
+  text-decoration: underline;
+}
+
+/* ─── Role chips ─────────────────────────────────────────────────────────── */
+.roles {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.roleChip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}

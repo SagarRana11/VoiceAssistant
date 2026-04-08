@@ -1,0 +1,130 @@
+.wrapper {
+  position: relative;
+}
+
+/* ─── Trigger button ─────────────────────────────────────────────────────── */
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #1d1d1f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--role-color);
+  background: color-mix(in srgb, var(--role-color) 5%, #ffffff);
+}
+
+.triggerOpen {
+  border-color: var(--role-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-color) 15%, transparent);
+}
+
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.chevron {
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ─── Dropdown ───────────────────────────────────────────────────────────── */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 260px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  z-index: 100;
+  animation: dropdownIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Option ─────────────────────────────────────────────────────────────── */
+.option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.option:hover {
+  background: #f8fafc;
+}
+
+.optionActive {
+  background: color-mix(in srgb, var(--role-color) 8%, transparent) !important;
+}
+
+.optionIcon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--role-color) 12%, transparent);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.optionText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.optionName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.optionDesc {
+  font-size: 12px;
+  color: #94a3b8;
+}

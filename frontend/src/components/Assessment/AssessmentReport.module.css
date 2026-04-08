@@ -1,0 +1,320 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: var(--cat-bg, #f0fdf4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.catEmoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.headerSub {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 2px;
+  font-weight: 600;
+}
+
+.catLabel {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cat-color, #16a34a);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+/* ── Scrollable content ───────────────────────────────────────────────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Score cards ─────────────────────────────────────────────────────────── */
+.scoreCards {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 10px;
+}
+
+.scoreCard {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardIcon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cardLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardScore {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--card-color, #374151);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.cardMax {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.cardBar {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cardBarFill {
+  height: 100%;
+  background: var(--card-color, #6366f1);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.cardCategory {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--card-color, #64748b);
+}
+
+/* Mental score card */
+.mentalCard {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mentalRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mentalScores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.miniScore {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.miniLabel {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.miniCat {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.titleDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.summaryText {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #374151;
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listItem {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #475569;
+  padding-left: 16px;
+  position: relative;
+}
+
+.listItem::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: #cbd5e1;
+}
+
+.strengthItem::before { color: #10b981; content: '✓'; }
+.concernItem::before  { color: #f59e0b; content: '!'; }
+
+/* ── Professional help ────────────────────────────────────────────────────── */
+.professionalSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+  gap: 8px;
+}
+
+.professionalText {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.disclaimer {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.footerDate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.closeFooterBtn {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.closeFooterBtn:hover {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .scoreCards {
+    grid-template-columns: 1fr;
+  }
+}

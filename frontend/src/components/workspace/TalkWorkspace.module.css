@@ -1,0 +1,154 @@
+/* ─── Main workspace ─────────────────────────────────────────────────────── */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 40px 32px 100px; /* bottom padding clears GlobalInputBar */
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ─── Role badge ─────────────────────────────────────────────────────────── */
+.roleBadge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--role-color, #6366f1) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--role-color, #6366f1) 25%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--role-color, #a5b4fc);
+  animation: fadeSlideDown 0.3s ease;
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Avatar wrapper ─────────────────────────────────────────────────────── */
+.avatarWrap {
+  animation: fadeSlideUp 0.4s ease;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Interim banner ─────────────────────────────────────────────────────── */
+.interimBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #8892a4;
+  font-style: italic;
+  max-width: 320px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.interimDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: dotPulse 1s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ─── Status label ───────────────────────────────────────────────────────── */
+.statusLabel {
+  font-size: 13px;
+  color: #4b5563;
+  letter-spacing: 0.02em;
+  min-height: 20px;
+  text-align: center;
+}
+
+/* ─── Controls ───────────────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ─── Stop button ────────────────────────────────────────────────────────── */
+.stopBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #8892a4;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.stopBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* ─── Notice box ─────────────────────────────────────────────────────────── */
+.noticeBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #d97706;
+  font-size: 13px;
+  max-width: 320px;
+  text-align: left;
+}
+
+.typeLink {
+  background: none;
+  border: none;
+  color: #818cf8;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* ─── Role tone ──────────────────────────────────────────────────────────── */
+.roleTone {
+  font-size: 12px;
+  color: #374151;
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+}
