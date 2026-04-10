@@ -18,6 +18,8 @@ export interface AgentMessagePayload {
   pendingRemainingFields?: string[];
   confirmField?: string;
   confirmValue?: unknown;
+  voiceEnabled?: boolean;
+  bulkFields?: Record<string, string>;
 }
 
 function authHeaders(): Record<string, string> {

@@ -18,7 +18,6 @@ import { apiScoreDomain, apiGenerateReport } from '../services/apiService';
 import {
   ASSESSMENT_DOMAINS,
   getAcknowledgment,
-  SAFETY_MESSAGE,
 } from '../assessment/assessmentQuestions';
 import type {
   AssessmentPhase,
@@ -71,6 +70,7 @@ const INITIAL_STATE: AssessmentState = {
 
 export function useAssessment(): UseAssessmentReturn {
   const [state, setState] = useState<AssessmentState>(INITIAL_STATE);
+  const [waitingForTextAnswer, setWaitingForTextAnswer] = useState(false);
 
   // Ref mirrors for async loop access (avoids stale closures)
   const stateRef   = useRef<AssessmentState>(INITIAL_STATE);
@@ -80,8 +80,11 @@ export function useAssessment(): UseAssessmentReturn {
   const answerResolveRef = useRef<((ans: string) => void) | null>(null);
   const interimRef = useRef('');
   const runningRef = useRef(false);
+  const voiceEnabledRef = useRef(true);
 
   const setPhase = useAppStore((s) => s.setAssistantState);
+  const voiceEnabled = useAppStore((s) => s.voiceEnabled);
+  voiceEnabledRef.current = voiceEnabled;
 
   // ── TTS queue ──────────────────────────────────────────────────────────────
   const tts = useSpeechQueue();
@@ -124,7 +127,7 @@ export function useAssessment(): UseAssessmentReturn {
       setPhase('listening');
     } else if (phase === 'scoring_domain' || phase === 'final_scoring') {
       setPhase('thinking');
-    } else {
+    } else if (phase === 'idle' || phase === 'paused' || phase === 'error') {
       setPhase('idle');
     }
   }, [update, setPhase]);
@@ -132,7 +135,9 @@ export function useAssessment(): UseAssessmentReturn {
   // ── Core async helpers ────────────────────────────────────────────────────
 
   const sleep = (ms: number) =>
-    new Promise<void>((res) => setTimeout(res, ms));
+    voiceEnabledRef.current
+      ? new Promise<void>((res) => setTimeout(res, ms))
+      : Promise.resolve();
 
   const checkAborted = () => {
     if (abortRef.current) throw new Error('ASSESSMENT_ABORTED');
@@ -145,17 +150,18 @@ export function useAssessment(): UseAssessmentReturn {
     checkAborted();
   };
 
-  /** Awaitable speak — wraps tts.speak with pause/abort checks */
+  /** Awaitable speak — wraps tts.speak with pause/abort checks. Skipped in text mode. */
   const speak = async (text: string) => {
     checkAborted();
     await waitIfPaused();
+    if (!voiceEnabledRef.current) return; // Text mode — skip TTS
     setPhase('speaking');
     tts.resetQueue();
     await tts.speak(text, EMPATHETIC_STATE);
     checkAborted();
   };
 
-  /** Awaitable listen — wraps speech recognition in a Promise */
+  /** Awaitable listen — voice mode uses mic, text mode waits for submitAnswer() */
   const listenForAnswer = (): Promise<string> => {
     return new Promise<string>((resolve) => {
       let resolved = false;
@@ -163,10 +169,18 @@ export function useAssessment(): UseAssessmentReturn {
       answerResolveRef.current = (answer: string) => {
         if (!resolved) {
           resolved = true;
+          setWaitingForTextAnswer(false);
           resolve(answer);
         }
       };
 
+      if (!voiceEnabledRef.current) {
+        // Text mode — just wait for submitAnswer() to resolve answerResolveRef
+        setWaitingForTextAnswer(true);
+        return;
+      }
+
+      // Voice mode — start mic
       speech.startListening();
 
       // Timeout safety: if user says nothing after LISTEN_TIMEOUT_MS
@@ -241,23 +255,6 @@ export function useAssessment(): UseAssessmentReturn {
             interimTranscript: '',
           });
 
-          // Safety check: suicidal ideation question — always acknowledge gently
-          // before scoring (in case we need to trigger safety protocol immediately)
-          if (question.id === 'phq_suicidality' && answer.trim()) {
-            const lowerAnswer = answer.toLowerCase();
-            const hasSafetyWords = ['yes', 'sometimes', 'thoughts', 'hurt', 'better off', 'harm', 'die', 'death'].some(
-              (w) => lowerAnswer.includes(w)
-            );
-            if (hasSafetyWords) {
-              setAssessmentPhase('safety_protocol');
-              await speak(SAFETY_MESSAGE);
-              update({ phase: 'safety_protocol' });
-              setPhase('idle');
-              runningRef.current = false;
-              return;
-            }
-          }
-
           // Acknowledge answer
           setAssessmentPhase('acknowledging');
           const ack = getAcknowledgment(domain.id);
@@ -273,16 +270,6 @@ export function useAssessment(): UseAssessmentReturn {
         try {
           const response = await apiScoreDomain(domain.id, domainAnswers);
           domainResult = response.result as PhysicalScore | MentalScore | EmotionalScore;
-
-          // Risk flag check for mental domain
-          if (domain.id === 'mental' && domainResult && (domainResult as MentalScore).riskFlag) {
-            setAssessmentPhase('safety_protocol');
-            await speak(SAFETY_MESSAGE);
-            update({ phase: 'safety_protocol' });
-            setPhase('idle');
-            runningRef.current = false;
-            return;
-          }
 
           collectedResults[domain.id as 'physical' | 'mental' | 'emotional'] =
             domainResult as PhysicalScore & MentalScore & EmotionalScore;
@@ -427,11 +414,19 @@ export function useAssessment(): UseAssessmentReturn {
     resumeRef.current?.();  // unblock any pause waiter so abort propagates
     resumeRef.current = null;
     runningRef.current = false;
+    setWaitingForTextAnswer(false);
     const reset = { ...INITIAL_STATE };
     stateRef.current = reset;
     setState(reset);
     setPhase('idle');
   }, [tts, speech, setPhase]);
+
+  /** Text-mode: user selected an option — resolve the pending answer promise */
+  const submitAnswer = useCallback((answer: string) => {
+    if (answerResolveRef.current) {
+      answerResolveRef.current(answer);
+    }
+  }, []);
 
   // ── Derived values for UI ─────────────────────────────────────────────────
 
@@ -463,5 +458,7 @@ export function useAssessment(): UseAssessmentReturn {
     pauseAssessment,
     resumeAssessment,
     stopAssessment,
+    submitAnswer,
+    waitingForTextAnswer,
   };
 }

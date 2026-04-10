@@ -2,6 +2,7 @@ import { Sidebar } from '../Sidebar/Sidebar';
 import { ConversationPanel } from '../ConversationPanel/ConversationPanel';
 import { WorkspaceRouter } from '../workspace/WorkspaceRouter';
 import { GlobalInputBar } from '../GlobalInputBar/GlobalInputBar';
+import type { CollectFieldSpec } from '../../hooks/useAgentConversation';
 import styles from './AppLayout.module.css';
 
 interface Props {
@@ -9,6 +10,9 @@ interface Props {
   agentStreamingResponse: string;
   interimTranscript: string;
   onGlobalSubmit: (message: string, mode: 'voice' | 'text') => Promise<void>;
+  collectAllFields: CollectFieldSpec[] | null;
+  onSubmitBulkFields: (fields: Record<string, string>) => Promise<void>;
+  isAgentThinking: boolean;
 }
 
 /**
@@ -20,6 +24,9 @@ export function AppLayout({
   agentStreamingResponse,
   interimTranscript,
   onGlobalSubmit,
+  collectAllFields,
+  onSubmitBulkFields,
+  isAgentThinking,
 }: Props) {
   return (
     <div className={styles.shell}>
@@ -44,6 +51,9 @@ export function AppLayout({
         streamingResponse={streamingResponse}
         agentStreamingResponse={agentStreamingResponse}
         interimTranscript={interimTranscript}
+        collectAllFields={collectAllFields}
+        onSubmitBulkFields={onSubmitBulkFields}
+        isAgentThinking={isAgentThinking}
       />
     </div>
   );

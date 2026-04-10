@@ -123,6 +123,45 @@ export async function apiListReports(): Promise<{ reports: unknown[] }> {
   return handleResponse<{ reports: unknown[] }>(res);
 }
 
+export async function apiGetReport(id: string): Promise<{ report: unknown }> {
+  const res = await fetch(`${BASE_URL}/assessment/reports/${id}`, {
+    headers: authHeaders(),
+  });
+  return handleResponse<{ report: unknown }>(res);
+}
+
+// ─── Plan History ────────────────────────────────────────────────────────────
+
+export async function apiListExercisePlans(): Promise<{ plans: unknown[] }> {
+  const res = await fetch(`${BASE_URL}/plans/exercise`, { headers: authHeaders() });
+  return handleResponse<{ plans: unknown[] }>(res);
+}
+
+export async function apiGetExercisePlan(id: string): Promise<{ plan: unknown }> {
+  const res = await fetch(`${BASE_URL}/plans/exercise/${id}`, { headers: authHeaders() });
+  return handleResponse<{ plan: unknown }>(res);
+}
+
+export async function apiListDietPlans(): Promise<{ plans: unknown[] }> {
+  const res = await fetch(`${BASE_URL}/plans/diet`, { headers: authHeaders() });
+  return handleResponse<{ plans: unknown[] }>(res);
+}
+
+export async function apiGetDietPlan(id: string): Promise<{ plan: unknown }> {
+  const res = await fetch(`${BASE_URL}/plans/diet/${id}`, { headers: authHeaders() });
+  return handleResponse<{ plan: unknown }>(res);
+}
+
+export async function apiListMeditationPlans(): Promise<{ plans: unknown[] }> {
+  const res = await fetch(`${BASE_URL}/plans/meditation`, { headers: authHeaders() });
+  return handleResponse<{ plans: unknown[] }>(res);
+}
+
+export async function apiGetMeditationPlan(id: string): Promise<{ plan: unknown }> {
+  const res = await fetch(`${BASE_URL}/plans/meditation/${id}`, { headers: authHeaders() });
+  return handleResponse<{ plan: unknown }>(res);
+}
+
 // ─── Streaming Chat Message ───────────────────────────────────────────────────
 export async function apiStreamMessage(
   conversationId: string,

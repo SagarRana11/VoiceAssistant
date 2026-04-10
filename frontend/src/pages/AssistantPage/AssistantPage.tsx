@@ -85,6 +85,9 @@ export function AssistantPage() {
           agentStreamingResponse={agent.streamingResponse}
           interimTranscript={interimTranscript}
           onGlobalSubmit={handleGlobalSubmit}
+          collectAllFields={agent.collectAllFields}
+          onSubmitBulkFields={agent.submitBulkFields}
+          isAgentThinking={agent.isThinking}
         />
 
         {/* ── Error toast ─────────────────────────────────────────────── */}

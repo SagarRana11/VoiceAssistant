@@ -149,6 +149,42 @@
   color: #22c55e;
 }
 
+/* ─── Selectable answer options (text mode) ──────────────────────────────── */
+.optionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.optionBtn {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #334155;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+
+.optionBtn:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #4338ca;
+}
+
+.optionBtn:active {
+  transform: scale(0.98);
+  background: #e0e7ff;
+  border-color: #818cf8;
+}
+
 /* ─── Interim transcript ─────────────────────────────────────────────────── */
 .interimBox {
   margin: 10px 24px 0;
@@ -306,69 +342,6 @@
 .pauseBtn:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
-}
-
-/* ─── Safety protocol ────────────────────────────────────────────────────── */
-.safetyBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 28px 28px 24px;
-  background: #fef2f2;
-  text-align: center;
-}
-
-.safetyIcon {
-  font-size: 36px;
-}
-
-.safetyTitle {
-  font-size: 18px;
-  font-weight: 800;
-  color: #991b1b;
-  margin: 0;
-}
-
-.safetyText {
-  font-size: 14px;
-  color: #7f1d1d;
-  margin: 0;
-  line-height: 1.6;
-  max-width: 380px;
-}
-
-.crisisLink {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 28px;
-  border-radius: 999px;
-  background: #ef4444;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.crisisLink:hover { background: #dc2626; }
-
-.closeSafetyBtn {
-  padding: 8px 20px;
-  border-radius: 999px;
-  border: 1.5px solid #fca5a5;
-  background: transparent;
-  color: #ef4444;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.closeSafetyBtn:hover {
-  background: #fef2f2;
 }
 
 /* ─── Report wrapper ─────────────────────────────────────────────────────── */

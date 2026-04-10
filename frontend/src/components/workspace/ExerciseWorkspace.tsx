@@ -1,21 +1,49 @@
-import { useState, useEffect } from 'react';
-import { usePlannerStore } from '../../store/plannerStore';
+import { useState, useEffect, useCallback } from 'react';
+import { usePlannerStore, ExercisePlan } from '../../store/plannerStore';
 import { ExercisePlanView } from '../ExercisePlanView/ExercisePlanView';
+import { PlanHistory, HistoryItem } from '../PlanHistory/PlanHistory';
+import { apiListExercisePlans, apiGetExercisePlan } from '../../services/apiService';
 import styles from './FeatureWorkspace.module.css';
 
 export function ExerciseWorkspace() {
-  const { currentPlan } = usePlannerStore();
+  const { currentPlan, history, historyLoading, setHistory, setHistoryLoading } = usePlannerStore();
   const [showPlan, setShowPlan] = useState(false);
+  const [viewingPlan, setViewingPlan] = useState<ExercisePlan | null>(null);
 
-  // Auto-open when plan arrives
   useEffect(() => {
     if (currentPlan) setShowPlan(true);
   }, [currentPlan]);
 
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const { plans } = await apiListExercisePlans();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setHistory(plans as any[]);
+    } catch { /* silent */ }
+    finally { setHistoryLoading(false); }
+  }, [setHistory, setHistoryLoading]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const historyItems: HistoryItem[] = history.map((p) => ({
+    _id: p._id,
+    icon: '💪',
+    title: p.planSummary?.slice(0, 50) || `${p.durationWeeks}-week plan`,
+    subtitle: `${p.durationWeeks} weeks`,
+    date: new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
+
+  const handleSelect = async (id: string) => {
+    try {
+      const { plan } = await apiGetExercisePlan(id);
+      setViewingPlan(plan as ExercisePlan);
+    } catch { /* silent */ }
+  };
+
   return (
     <div className={styles.workspace}>
       {currentPlan ? (
-        /* Plan exists — show summary card + view button */
         <div className={styles.planCard}>
           <div className={styles.planCardIcon} aria-hidden="true">💪</div>
           <h2 className={styles.planCardTitle}>Your Exercise Plan</h2>
@@ -45,7 +73,6 @@ export function ExerciseWorkspace() {
           </button>
         </div>
       ) : (
-        /* No plan yet */
         <div className={styles.emptyFeature}>
           <div className={styles.emptyIcon} aria-hidden="true">💪</div>
           <h2 className={styles.emptyTitle}>Exercise Planner</h2>
@@ -62,9 +89,21 @@ export function ExerciseWorkspace() {
         </div>
       )}
 
-      {/* Exercise plan overlay */}
+      <PlanHistory
+        label="Exercise Plan History"
+        items={historyItems}
+        loading={historyLoading}
+        onRefresh={fetchHistory}
+        onSelect={handleSelect}
+        emptyText="No exercise plans yet. Ask the AI to create one."
+      />
+
       {showPlan && currentPlan && (
         <ExercisePlanView plan={currentPlan} onClose={() => setShowPlan(false)} />
+      )}
+
+      {viewingPlan && (
+        <ExercisePlanView plan={viewingPlan} onClose={() => setViewingPlan(null)} />
       )}
     </div>
   );

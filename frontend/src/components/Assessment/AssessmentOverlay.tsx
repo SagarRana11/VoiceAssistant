@@ -24,10 +24,11 @@ export function AssessmentOverlay({
   pauseAssessment,
   resumeAssessment,
   stopAssessment,
+  submitAnswer,
+  waitingForTextAnswer,
 }: Props) {
-  const { phase, domainIndex, questionIndex, interimTranscript, finalReport, domainResults, assessmentId, error } = assessmentState;
+  const { phase, domainIndex, questionIndex, interimTranscript, finalReport, domainResults, assessmentId, answers, error } = assessmentState;
   const isPaused = phase === 'paused';
-  const isSafetyProtocol = phase === 'safety_protocol';
   const isReport = phase === 'report';
   const isScoring = phase === 'scoring_domain' || phase === 'final_scoring';
 
@@ -52,26 +53,6 @@ export function AssessmentOverlay({
           </button>
         </div>
 
-        {/* ── Safety Protocol ─────────────────────────────────────────────── */}
-        {isSafetyProtocol && (
-          <div className={styles.safetyBox}>
-            <div className={styles.safetyIcon}>🆘</div>
-            <h3 className={styles.safetyTitle}>You are not alone</h3>
-            <p className={styles.safetyText}>
-              If you are having thoughts of hurting yourself, please reach out immediately.
-            </p>
-            <a href="tel:988" className={styles.crisisLink}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.07 3.4 2 2 0 0 1 3.07 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" />
-              </svg>
-              Call or Text 988 — Crisis Lifeline
-            </a>
-            <button className={styles.closeSafetyBtn} onClick={stopAssessment}>
-              Close Assessment
-            </button>
-          </div>
-        )}
-
         {/* ── Final Report ────────────────────────────────────────────────── */}
         {isReport && finalReport && (
           <div className={styles.reportWrapper}>
@@ -81,13 +62,14 @@ export function AssessmentOverlay({
               mentalResult={domainResults.mental}
               emotionalResult={domainResults.emotional}
               assessmentId={assessmentId}
+              answers={answers}
               onClose={stopAssessment}
             />
           </div>
         )}
 
         {/* ── Active assessment UI ────────────────────────────────────────── */}
-        {!isSafetyProtocol && !isReport && (
+        {!isReport && (
           <>
             {/* Progress */}
             {progress && (
@@ -105,7 +87,25 @@ export function AssessmentOverlay({
             {currentQuestion && (phase === 'asking' || phase === 'listening' || phase === 'acknowledging') && (
               <div className={styles.questionBox}>
                 <p className={styles.questionText}>{currentQuestion.text}</p>
-                {phase === 'listening' && (
+
+                {/* Text mode: show selectable options */}
+                {waitingForTextAnswer && currentQuestion.options && (
+                  <div className={styles.optionsGrid}>
+                    {currentQuestion.options.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        className={styles.optionBtn}
+                        onClick={() => submitAnswer(opt)}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Voice mode: show listening indicator */}
+                {phase === 'listening' && !waitingForTextAnswer && (
                   <div className={styles.listeningIndicator}>
                     <span className={styles.listenDot} />
                     <span className={styles.listenDot} />
@@ -117,7 +117,7 @@ export function AssessmentOverlay({
             )}
 
             {/* Live interim transcript */}
-            {interimTranscript && phase === 'listening' && (
+            {interimTranscript && phase === 'listening' && !waitingForTextAnswer && (
               <div className={styles.interimBox}>
                 <div className={styles.interimDot} />
                 <p className={styles.interimText}>&ldquo;{interimTranscript}&rdquo;</p>

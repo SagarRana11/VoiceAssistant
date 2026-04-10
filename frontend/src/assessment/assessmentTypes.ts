@@ -20,7 +20,6 @@ export type AssessmentPhase =
   | 'domain_summary'    // Assistant reading domain result aloud
   | 'final_scoring'     // API call for final consolidated report
   | 'report'            // Displaying full final report
-  | 'safety_protocol'   // Triggered if risk flag set on mental domain
   | 'paused'            // User paused the assessment
   | 'error';            // Unrecoverable error
 
@@ -31,6 +30,7 @@ export interface AssessmentQuestion {
   domain: DomainId;
   shortLabel: string;    // Used in progress indicator e.g. "Sleep Quality"
   text: string;          // Full conversational question text (spoken by assistant)
+  options?: string[];    // Selectable answer options for text mode (when voice is off)
 }
 
 // ─── Domain definition ────────────────────────────────────────────────────────
@@ -141,4 +141,6 @@ export interface UseAssessmentReturn {
   pauseAssessment: () => void;
   resumeAssessment: () => void;
   stopAssessment: () => void;
+  submitAnswer: (answer: string) => void;
+  waitingForTextAnswer: boolean;
 }

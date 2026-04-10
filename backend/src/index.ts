@@ -9,6 +9,7 @@ import didRoutes        from './routes/did';
 import assessmentRoutes from './routes/assessment';
 import profileRoutes    from './routes/profile';
 import agentRoutes      from './routes/agent';
+import planRoutes       from './routes/plans';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/did',        didRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/profile',    profileRoutes);
 app.use('/api/agent',      agentRoutes);
+app.use('/api/plans',      planRoutes);
 
 // ─── 404 + Error Handlers ─────────────────────────────────────────────────────
 app.use(notFound);

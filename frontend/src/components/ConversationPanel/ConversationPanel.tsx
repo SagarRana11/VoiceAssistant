@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { useLayoutStore } from '../../store/useLayoutStore';
 import { ROLES } from '../../constants/roles';
+import { ProfileFieldsForm } from '../ProfileFieldsForm/ProfileFieldsForm';
+import type { CollectFieldSpec } from '../../hooks/useAgentConversation';
 import type { Message } from '../../types';
 import styles from './ConversationPanel.module.css';
 
@@ -9,12 +11,18 @@ interface Props {
   streamingResponse: string;
   agentStreamingResponse: string;
   interimTranscript: string;
+  collectAllFields: CollectFieldSpec[] | null;
+  onSubmitBulkFields: (fields: Record<string, string>) => Promise<void>;
+  isAgentThinking: boolean;
 }
 
 export function ConversationPanel({
   streamingResponse,
   agentStreamingResponse,
   interimTranscript,
+  collectAllFields,
+  onSubmitBulkFields,
+  isAgentThinking,
 }: Props) {
   const { messages, currentRole, clearSession } = useAppStore();
   const { conversationPanelCollapsed, toggleConversationPanel } = useLayoutStore();
@@ -94,6 +102,22 @@ export function ConversationPanel({
                   <div className={styles.bubbleContent}>
                     <p className={styles.bubbleText}>{activeStreaming}</p>
                     <span className={styles.cursor} aria-hidden="true" />
+                  </div>
+                </div>
+              )}
+
+              {/* Profile fields form (text mode) */}
+              {collectAllFields && collectAllFields.length > 0 && (
+                <div className={`${styles.bubble} ${styles.assistant}`}
+                  style={{ '--role-color': role.color } as React.CSSProperties}
+                >
+                  <div className={styles.bubbleAvatar}>AI</div>
+                  <div className={styles.formBubble}>
+                    <ProfileFieldsForm
+                      fields={collectAllFields}
+                      onSubmit={onSubmitBulkFields}
+                      isSubmitting={isAgentThinking}
+                    />
                   </div>
                 </div>
               )}

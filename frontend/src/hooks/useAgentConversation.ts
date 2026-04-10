@@ -15,6 +15,14 @@ import {
 // Detects sentence boundaries for streaming TTS
 const SENTENCE_BOUNDARY = /^([\s\S]{12,}?[.!?])(?:\s|$)/;
 
+export interface CollectFieldSpec {
+  field: string;
+  question: string;
+  inputType?: 'number' | 'select' | 'text';
+  options?: { label: string; value: string }[];
+  unit?: string;
+}
+
 export interface AgentConversationState {
   streamingResponse: string;
   conversationState: ConversationState;
@@ -24,13 +32,16 @@ export interface AgentConversationState {
   pendingIntent: string | null;
   pendingRemainingFields: string[];
   pendingPlanId: string | null;
+  collectAllFields: CollectFieldSpec[] | null;
+  collectAllIntent: string | null;
   history: { role: 'user' | 'assistant'; content: string }[];
   submitMessage: (text: string, mode?: 'voice' | 'text') => Promise<void>;
+  submitBulkFields: (fields: Record<string, string>) => Promise<void>;
   clearHistory: () => void;
 }
 
 export function useAgentConversation(): AgentConversationState {
-  const { addMessage, setAssistantState, setError } = useAppStore();
+  const { addMessage, setAssistantState, setError, voiceEnabled } = useAppStore();
   const { setProfile, updateField }                 = useProfileStore();
   const { setPlan, setGenerating }                  = usePlannerStore();
   const { setPlan: setMeditationPlan, setGenerating: setMeditationGenerating } = useMeditationStore();
@@ -54,6 +65,10 @@ export function useAgentConversation(): AgentConversationState {
   // Plan state
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
 
+  // Bulk field collection state (text mode)
+  const [collectAllFields, setCollectAllFields] = useState<CollectFieldSpec[] | null>(null);
+  const [collectAllIntent, setCollectAllIntent] = useState<string | null>(null);
+
   const isProcessingRef   = useRef(false);
   const sentenceBufferRef = useRef('');
 
@@ -69,6 +84,11 @@ export function useAgentConversation(): AgentConversationState {
         setPendingField(d.field as string);
         setPendingIntent(d.intent as string);
         setPendingRemainingFields((d.remainingFields as string[]) ?? []);
+        break;
+
+      case 'COLLECT_ALL_FIELDS':
+        setCollectAllFields(d.fields as CollectFieldSpec[]);
+        setCollectAllIntent(d.intent as string);
         break;
 
       case 'PROFILE_FIELD_SAVED': {
@@ -160,14 +180,15 @@ export function useAgentConversation(): AgentConversationState {
         {
           message: trimmed,
           conversationHistory: history,
+          voiceEnabled,
           ...(pendingField && !isConfirmReply ? {
             pendingField,
             pendingIntent: pendingIntent ?? undefined,
             pendingRemainingFields,
           } : {}),
           ...(isConfirmReply ? {
-            confirmField:  confirmFieldRef.current ?? undefined,
-            confirmValue:  confirmValueRef.current,
+            confirmField: confirmFieldRef.current ?? undefined,
+            confirmValue: confirmValueRef.current,
           } : {}),
         },
         {
@@ -261,12 +282,125 @@ export function useAgentConversation(): AgentConversationState {
     handleAction,
   ]);
 
+  // ── Submit all fields at once (text-mode form) ─────────────────────────
+  const submitBulkFields = useCallback(async (fields: Record<string, string>) => {
+    if (!collectAllIntent || isProcessingRef.current) return;
+
+    isProcessingRef.current = true;
+    sentenceBufferRef.current = '';
+    resetQueue();
+    setError(null);
+    setIsThinking(true);
+    setAssistantState('thinking');
+    setStreamingResponse('');
+
+    // Clear the form
+    setCollectAllFields(null);
+    const intent = collectAllIntent;
+    setCollectAllIntent(null);
+
+    let fullResponse = '';
+    let speakingStarted = false;
+
+    try {
+      await streamAgentMessage(
+        {
+          message: '',
+          conversationHistory: history,
+          voiceEnabled,
+          pendingIntent: intent,
+          bulkFields: fields,
+        },
+        {
+          onChunk: (chunk) => {
+            fullResponse += chunk;
+            sentenceBufferRef.current += chunk;
+            setStreamingResponse(fullResponse);
+
+            const match = sentenceBufferRef.current.match(SENTENCE_BOUNDARY);
+            if (match) {
+              const sentence = match[1].trim();
+              sentenceBufferRef.current = sentenceBufferRef.current
+                .slice(match[0].length)
+                .trimStart();
+              if (!speakingStarted) {
+                speakingStarted = true;
+                setAssistantState('speaking');
+              }
+              enqueue(sentence, DEFAULT_STATE);
+            }
+          },
+          onAction: handleAction,
+          onDone: () => {
+            const leftover = sentenceBufferRef.current.trim();
+            if (leftover) {
+              if (!speakingStarted) {
+                speakingStarted = true;
+                setAssistantState('speaking');
+              }
+              enqueue(leftover, DEFAULT_STATE);
+            }
+            sentenceBufferRef.current = '';
+          },
+          onError: (err) => {
+            setError(err.message);
+            setAssistantState('idle');
+            setIsThinking(false);
+            isProcessingRef.current = false;
+          },
+        }
+      );
+
+      const leftover = sentenceBufferRef.current.trim();
+      if (leftover && !speakingStarted) {
+        speakingStarted = true;
+        setAssistantState('speaking');
+        enqueue(leftover, DEFAULT_STATE);
+      }
+      sentenceBufferRef.current = '';
+
+      if (speakingStarted) await waitForDrain();
+
+      setStreamingResponse('');
+      if (fullResponse.trim()) {
+        addMessage({
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: fullResponse,
+          timestamp: new Date(),
+        });
+        setHistory(h => [...h, { role: 'assistant', content: fullResponse }]);
+      }
+
+      setAssistantState('idle');
+    } catch (err) {
+      setError((err as Error).message);
+      setAssistantState('idle');
+    } finally {
+      setIsThinking(false);
+      isProcessingRef.current = false;
+    }
+  }, [
+    collectAllIntent,
+    voiceEnabled,
+    history,
+    addMessage,
+    setAssistantState,
+    setError,
+    enqueue,
+    waitForDrain,
+    resetQueue,
+    handleAction,
+  ]);
+
   const clearHistory = useCallback(() => {
     setHistory([]);
     setPendingField(null);
     setPendingIntent(null);
     setPendingRemainingFields([]);
     setPendingPlanId(null);
+    setCollectAllFields(null);
+    setCollectAllIntent(null);
     confirmFieldRef.current = null;
     confirmValueRef.current = null;
     setStreamingResponse('');
@@ -281,8 +415,11 @@ export function useAgentConversation(): AgentConversationState {
     pendingIntent,
     pendingRemainingFields,
     pendingPlanId,
+    collectAllFields,
+    collectAllIntent,
     history,
     submitMessage,
+    submitBulkFields,
     clearHistory,
   };
 }

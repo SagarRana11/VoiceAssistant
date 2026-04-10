@@ -1,15 +1,45 @@
-import { useState, useEffect } from 'react';
-import { useDietStore } from '../../store/dietStore';
+import { useState, useEffect, useCallback } from 'react';
+import { useDietStore, DietPlan } from '../../store/dietStore';
 import { DietPlanView } from '../DietPlanView/DietPlanView';
+import { PlanHistory, HistoryItem } from '../PlanHistory/PlanHistory';
+import { apiListDietPlans, apiGetDietPlan } from '../../services/apiService';
 import styles from './FeatureWorkspace.module.css';
 
 export function DietWorkspace() {
-  const { currentPlan } = useDietStore();
+  const { currentPlan, history, historyLoading, setHistory, setHistoryLoading } = useDietStore();
   const [showPlan, setShowPlan] = useState(false);
+  const [viewingPlan, setViewingPlan] = useState<DietPlan | null>(null);
 
   useEffect(() => {
     if (currentPlan) setShowPlan(true);
   }, [currentPlan]);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const { plans } = await apiListDietPlans();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setHistory(plans as any[]);
+    } catch { /* silent */ }
+    finally { setHistoryLoading(false); }
+  }, [setHistory, setHistoryLoading]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const historyItems: HistoryItem[] = history.map((p) => ({
+    _id: p._id,
+    icon: '🥗',
+    title: p.planSummary?.slice(0, 50) || 'Diet Plan',
+    subtitle: `${p.calorieTarget} kcal · BMI ${p.bmi}`,
+    date: new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
+
+  const handleSelect = async (id: string) => {
+    try {
+      const { plan } = await apiGetDietPlan(id);
+      setViewingPlan(plan as DietPlan);
+    } catch { /* silent */ }
+  };
 
   return (
     <div className={styles.workspace}>
@@ -54,8 +84,21 @@ export function DietWorkspace() {
         </div>
       )}
 
+      <PlanHistory
+        label="Diet Plan History"
+        items={historyItems}
+        loading={historyLoading}
+        onRefresh={fetchHistory}
+        onSelect={handleSelect}
+        emptyText="No diet plans yet. Ask the AI to create one."
+      />
+
       {showPlan && currentPlan && (
         <DietPlanView plan={currentPlan} onClose={() => setShowPlan(false)} />
+      )}
+
+      {viewingPlan && (
+        <DietPlanView plan={viewingPlan} onClose={() => setViewingPlan(null)} />
       )}
     </div>
   );

@@ -260,6 +260,12 @@
   50%       { opacity: 0; }
 }
 
+/* ─── Form bubble (wider than text) ─────────────────────────────────────── */
+.formBubble {
+  max-width: 300px;
+  width: 100%;
+}
+
 .scrollAnchor { height: 1px; flex-shrink: 0; }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */

@@ -4,6 +4,7 @@
  */
 
 import type { FinalReport, PhysicalScore, MentalScore, EmotionalScore } from '../../assessment/assessmentTypes';
+import { ASSESSMENT_DOMAINS } from '../../assessment/assessmentQuestions';
 import styles from './AssessmentReport.module.css';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
   mentalResult?:   MentalScore;
   emotionalResult?: EmotionalScore;
   assessmentId?: string;
+  answers?: Record<string, string>;
   onClose: () => void;
 }
 
@@ -37,7 +39,7 @@ const ANXIETY_COLORS: Record<string, string> = {
   'Severe':   '#ef4444',
 };
 
-export function AssessmentReport({ report, physicalResult, mentalResult, emotionalResult, onClose }: Props) {
+export function AssessmentReport({ report, physicalResult, mentalResult, emotionalResult, answers, onClose }: Props) {
   const catConfig = CATEGORY_CONFIG[report.overallCategory] ?? CATEGORY_CONFIG['Fair'];
 
   return (
@@ -182,6 +184,33 @@ export function AssessmentReport({ report, physicalResult, mentalResult, emotion
             Always consult a qualified healthcare professional for medical advice.
           </p>
         </section>
+
+        {/* ── Q&A Summary ──────────────────────────────────────────────────── */}
+        {answers && Object.keys(answers).length > 0 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>
+              <span className={styles.titleDot} style={{ background: '#8b5cf6' }} />
+              Your Responses
+            </h3>
+            {ASSESSMENT_DOMAINS.map((domain) => (
+              <div key={domain.id} className={styles.qaDomain}>
+                <h4 className={styles.qaDomainTitle}>
+                  {domain.icon} {domain.label}
+                </h4>
+                {domain.questions.map((q) => {
+                  const answer = answers[q.id];
+                  if (!answer) return null;
+                  return (
+                    <div key={q.id} className={styles.qaItem}>
+                      <p className={styles.qaQuestion}>{q.shortLabel}</p>
+                      <p className={styles.qaAnswer}>{answer}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </section>
+        )}
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <div className={styles.footer}>

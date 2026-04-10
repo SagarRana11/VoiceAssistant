@@ -13,6 +13,9 @@ import { IUserProfile } from '../models/UserProfile';
 interface FieldSpec {
   field: string;
   question: string;
+  inputType?: 'number' | 'select' | 'text';      // UI hint for form rendering
+  options?: { label: string; value: string }[];    // choices for select fields
+  unit?: string;                                   // e.g. "cm", "kg", "minutes"
   parseValue?: (answer: string) => unknown;
 }
 
@@ -20,6 +23,14 @@ const MEDITATION_REQUIRED_FIELDS: FieldSpec[] = [
   {
     field: 'stressLevel',
     question: "On a scale of 1 to 5, how would you rate your current stress level? One is very calm and five is very stressed.",
+    inputType: 'select',
+    options: [
+      { label: '1 - Very calm', value: '1' },
+      { label: '2 - Calm', value: '2' },
+      { label: '3 - Moderate', value: '3' },
+      { label: '4 - Stressed', value: '4' },
+      { label: '5 - Very stressed', value: '5' },
+    ],
     parseValue: v => {
       const n = parseInt(v, 10);
       return n >= 1 && n <= 5 ? n : undefined;
@@ -28,20 +39,43 @@ const MEDITATION_REQUIRED_FIELDS: FieldSpec[] = [
   {
     field: 'sleepHours',
     question: "How many hours of sleep are you getting each night on average?",
+    inputType: 'number',
+    unit: 'hours',
     parseValue: v => parseFloat(v) || undefined,
   },
   {
     field: 'meditationExperience',
-    question: "Do you have any prior meditation experience? Say yes, no, or briefly describe your background.",
+    question: "Do you have any prior meditation experience?",
+    inputType: 'select',
+    options: [
+      { label: 'No experience', value: 'none' },
+      { label: 'Beginner', value: 'beginner' },
+      { label: 'Intermediate', value: 'intermediate' },
+      { label: 'Advanced', value: 'advanced' },
+    ],
   },
   {
     field: 'preferredMeditationDuration',
-    question: "How many minutes can you dedicate to meditation per session? For example, 5, 10, or 20 minutes.",
+    question: "How many minutes can you dedicate to meditation per session?",
+    inputType: 'select',
+    options: [
+      { label: '5 minutes', value: '5' },
+      { label: '10 minutes', value: '10' },
+      { label: '15 minutes', value: '15' },
+      { label: '20 minutes', value: '20' },
+      { label: '30 minutes', value: '30' },
+    ],
     parseValue: v => parseInt(v, 10) || 10,
   },
   {
     field: 'meditationPreferredTime',
-    question: "When do you prefer to meditate — morning, evening, or anytime?",
+    question: "When do you prefer to meditate?",
+    inputType: 'select',
+    options: [
+      { label: 'Morning', value: 'morning' },
+      { label: 'Evening', value: 'evening' },
+      { label: 'Anytime', value: 'anytime' },
+    ],
   },
 ];
 
@@ -49,49 +83,87 @@ const DIET_REQUIRED_FIELDS: FieldSpec[] = [
   {
     field: 'height',
     question: "What is your height in centimetres? For example, 170.",
+    inputType: 'number',
+    unit: 'cm',
     parseValue: v => parseFloat(v) || undefined,
   },
   {
     field: 'weight',
     question: "And your current weight in kilograms?",
+    inputType: 'number',
+    unit: 'kg',
     parseValue: v => parseFloat(v) || undefined,
   },
   {
     field: 'age',
     question: "How old are you?",
+    inputType: 'number',
+    unit: 'years',
     parseValue: v => parseInt(v, 10) || undefined,
   },
   {
     field: 'gender',
-    question: "What is your gender — male, female, or other?",
+    question: "What is your gender?",
+    inputType: 'select',
+    options: [
+      { label: 'Male', value: 'male' },
+      { label: 'Female', value: 'female' },
+      { label: 'Other', value: 'other' },
+    ],
   },
   {
     field: 'activityLevel',
-    question: "How active are you — sedentary, light, moderate, active, or very active?",
+    question: "How active are you?",
+    inputType: 'select',
+    options: [
+      { label: 'Sedentary', value: 'sedentary' },
+      { label: 'Light', value: 'light' },
+      { label: 'Moderate', value: 'moderate' },
+      { label: 'Active', value: 'active' },
+      { label: 'Very active', value: 'very_active' },
+    ],
   },
   {
     field: 'fitnessGoal',
-    question: "What is your primary goal — weight loss, muscle gain, endurance, flexibility, or general fitness?",
+    question: "What is your primary goal?",
+    inputType: 'select',
+    options: [
+      { label: 'Weight loss', value: 'weight_loss' },
+      { label: 'Muscle gain', value: 'muscle_gain' },
+      { label: 'Endurance', value: 'endurance' },
+      { label: 'Flexibility', value: 'flexibility' },
+      { label: 'General fitness', value: 'general_fitness' },
+    ],
   },
   {
     field: 'dietPreference',
-    question: "Do you follow any specific diet — omnivore, vegetarian, vegan, keto, or paleo?",
+    question: "Do you follow any specific diet?",
+    inputType: 'select',
+    options: [
+      { label: 'Omnivore', value: 'omnivore' },
+      { label: 'Vegetarian', value: 'vegetarian' },
+      { label: 'Vegan', value: 'vegan' },
+      { label: 'Keto', value: 'keto' },
+      { label: 'Paleo', value: 'paleo' },
+    ],
   },
   {
     field: 'allergies',
-    question: "Do you have any food allergies? Say no if none.",
+    question: "Do you have any food allergies?",
+    inputType: 'text',
     parseValue: v => {
       const lower = v.toLowerCase().trim();
-      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na'].includes(lower)) return [];
+      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na', ''].includes(lower)) return [];
       return [v.trim()];
     },
   },
   {
     field: 'diseases',
-    question: "Do you have any medical conditions I should know about, like diabetes or thyroid issues? Say no if none.",
+    question: "Do you have any medical conditions?",
+    inputType: 'text',
     parseValue: v => {
       const lower = v.toLowerCase().trim();
-      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na'].includes(lower)) return [];
+      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na', ''].includes(lower)) return [];
       return [v.trim()];
     },
   },
@@ -101,37 +173,68 @@ const EXERCISE_REQUIRED_FIELDS: FieldSpec[] = [
   {
     field: 'height',
     question: "What's your height in centimetres? For example, 175.",
+    inputType: 'number',
+    unit: 'cm',
     parseValue: v => parseFloat(v) || undefined,
   },
   {
     field: 'weight',
     question: "And your current weight in kilograms?",
+    inputType: 'number',
+    unit: 'kg',
     parseValue: v => parseFloat(v) || undefined,
   },
   {
     field: 'age',
     question: "How old are you?",
+    inputType: 'number',
+    unit: 'years',
     parseValue: v => parseInt(v, 10) || undefined,
   },
   {
     field: 'activityLevel',
-    question: "How would you describe your activity level right now — sedentary, light, moderate, active, or very active?",
+    question: "How would you describe your activity level?",
+    inputType: 'select',
+    options: [
+      { label: 'Sedentary', value: 'sedentary' },
+      { label: 'Light', value: 'light' },
+      { label: 'Moderate', value: 'moderate' },
+      { label: 'Active', value: 'active' },
+      { label: 'Very active', value: 'very_active' },
+    ],
   },
   {
     field: 'fitnessGoal',
-    question: "What's your main fitness goal — weight loss, muscle gain, endurance, flexibility, or general fitness?",
+    question: "What's your main fitness goal?",
+    inputType: 'select',
+    options: [
+      { label: 'Weight loss', value: 'weight_loss' },
+      { label: 'Muscle gain', value: 'muscle_gain' },
+      { label: 'Endurance', value: 'endurance' },
+      { label: 'Flexibility', value: 'flexibility' },
+      { label: 'General fitness', value: 'general_fitness' },
+    ],
   },
   {
     field: 'availableTimePerDay',
-    question: "How many minutes a day can you realistically dedicate to exercise?",
+    question: "How many minutes a day can you dedicate to exercise?",
+    inputType: 'select',
+    options: [
+      { label: '15 minutes', value: '15' },
+      { label: '30 minutes', value: '30' },
+      { label: '45 minutes', value: '45' },
+      { label: '60 minutes', value: '60' },
+      { label: '90 minutes', value: '90' },
+    ],
     parseValue: v => parseInt(v, 10) || undefined,
   },
   {
     field: 'injuries',
-    question: "Do you have any injuries or physical conditions I should know about? Just say no if you're all good.",
+    question: "Do you have any injuries or physical conditions?",
+    inputType: 'text',
     parseValue: v => {
       const lower = v.toLowerCase().trim();
-      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na'].includes(lower)) return [];
+      if (['no', 'none', 'nope', 'nothing', 'n/a', 'na', ''].includes(lower)) return [];
       return [v.trim()];
     },
   },
@@ -169,6 +272,8 @@ export async function handleAgentMessage(req: AuthRequest, res: Response): Promi
     pendingRemainingFields,
     confirmField,
     confirmValue,
+    voiceEnabled = true,
+    bulkFields,
   } = req.body as {
     message: string;
     conversationHistory: ChatMessage[];
@@ -177,11 +282,19 @@ export async function handleAgentMessage(req: AuthRequest, res: Response): Promi
     pendingRemainingFields?: string[];
     confirmField?: string;
     confirmValue?: unknown;
+    voiceEnabled?: boolean;
+    bulkFields?: Record<string, string>;
   };
 
   const sse = makeSSE(res);
 
   try {
+    // ── 0. Bulk field submission from text-mode form ────────────────────────────
+    if (bulkFields && pendingIntent) {
+      await handleBulkFields(userId, bulkFields, pendingIntent, sse);
+      return;
+    }
+
     // ── 1. Handle pending confirmation (user replied yes/no to a field update) ─
     if (confirmField && confirmValue !== undefined) {
       await handleConfirmation(
@@ -203,11 +316,11 @@ export async function handleAgentMessage(req: AuthRequest, res: Response): Promi
     const intent = detectIntent(message);
 
     if (intent === 'exercise_plan') {
-      await handleExercisePlanIntent(userId, sse);
+      await handleExercisePlanIntent(userId, voiceEnabled, sse);
     } else if (intent === 'diet_plan') {
-      await handleGenericPlanIntent(userId, 'diet_plan', DIET_REQUIRED_FIELDS, sse);
+      await handleGenericPlanIntent(userId, 'diet_plan', DIET_REQUIRED_FIELDS, voiceEnabled, sse);
     } else if (intent === 'meditation') {
-      await handleGenericPlanIntent(userId, 'meditation', MEDITATION_REQUIRED_FIELDS, sse);
+      await handleGenericPlanIntent(userId, 'meditation', MEDITATION_REQUIRED_FIELDS, voiceEnabled, sse);
     } else if (intent === 'view_profile') {
       await handleViewProfile(userId, sse);
     } else if (intent === 'update_profile') {
@@ -228,6 +341,7 @@ export async function handleAgentMessage(req: AuthRequest, res: Response): Promi
 
 async function handleExercisePlanIntent(
   userId: string,
+  voiceEnabled: boolean,
   sse: ReturnType<typeof makeSSE>
 ): Promise<void> {
   const profile = await toolGetUserProfile(userId);
@@ -240,8 +354,14 @@ async function handleExercisePlanIntent(
     const profileData = profile ? (profile.toObject() as Record<string, unknown>) : {};
     const planner = new ExercisePlanner(userId, profileData);
     await planner.generate(sse.chunk, sse.action);
+  } else if (!voiceEnabled) {
+    // Text mode — send all missing fields at once as a form
+    const missingSpecs = EXERCISE_REQUIRED_FIELDS.filter(f => missing.includes(f.field))
+      .map(({ field, question, inputType, options, unit }) => ({ field, question, inputType, options, unit }));
+    sse.chunk("I need a few details to build your workout plan. Please fill in the form below.");
+    sse.action('COLLECT_ALL_FIELDS', { intent: 'exercise_plan', fields: missingSpecs });
   } else {
-    // Start conversational collection
+    // Voice mode — start conversational collection one at a time
     const firstSpec = EXERCISE_REQUIRED_FIELDS.find(f => f.field === missing[0])!;
     const remaining = missing.slice(1);
 
@@ -279,24 +399,39 @@ async function handleGenericPlanIntent(
   userId: string,
   intent: string,
   requiredFields: FieldSpec[],
+  voiceEnabled: boolean,
   sse: ReturnType<typeof makeSSE>
 ): Promise<void> {
-  const profile        = await toolGetUserProfile(userId);
-  const requiredNames  = requiredFields.map(f => f.field);
-  const missing        = getMissingFields(profile, requiredNames);
+  const profile = await toolGetUserProfile(userId);
+  const requiredNames = requiredFields.map(f => f.field);
+  const missing = getMissingFields(profile, requiredNames);
 
   if (missing.length === 0) {
     const introMap: Record<string, string> = {
       meditation: "I have everything I need. Let me create your personalised meditation plan — ",
-      diet_plan:  "I have everything I need. Let me build your personalised diet plan — ",
+      diet_plan: "I have everything I need. Let me build your personalised diet plan — ",
     };
     sse.chunk(introMap[intent] ?? "Building your plan — ");
     const planner = await buildPlanner(intent, userId);
     await planner.generate(sse.chunk, sse.action);
+  } else if (!voiceEnabled) {
+    // Text mode — send all missing fields at once as a form
+    const missingSpecs = requiredFields
+      .filter(f => missing.includes(f.field))
+      .map(({ field, question, inputType, options, unit }) => ({
+        field, question, inputType, options, unit,
+      }));
+    const introMap: Record<string, string> = {
+      meditation: "I need a few details to create your meditation plan. Please fill in the form below.",
+      diet_plan: "I need a few details to build your diet plan. Please fill in the form below.",
+    };
+    sse.chunk(introMap[intent] ?? "Please fill in the form below.");
+    sse.action('COLLECT_ALL_FIELDS', { intent, fields: missingSpecs });
   } else {
+    // Voice mode — one field at a time
     const introMap: Record<string, string> = {
       meditation: "I'd love to design a personalised meditation plan for you! ",
-      diet_plan:  "I'd love to create a personalised diet plan for you! ",
+      diet_plan: "I'd love to create a personalised diet plan for you! ",
     };
     sse.chunk(introMap[intent] ?? "Let me build your plan! ");
 
@@ -309,6 +444,28 @@ async function handleGenericPlanIntent(
       remainingFields: remaining,
     });
   }
+}
+
+async function handleBulkFields(
+  userId: string,
+  bulkFields: Record<string, string>,
+  intent: string,
+  sse: ReturnType<typeof makeSSE>
+): Promise<void> {
+  const fieldSpecs = getFieldSpecs(intent);
+
+  // Parse and save each field
+  for (const [field, rawValue] of Object.entries(bulkFields)) {
+    const spec = fieldSpecs.find(f => f.field === field);
+    const value = spec?.parseValue ? spec.parseValue(rawValue) : rawValue;
+    await toolSaveProfileField(userId, field, value);
+    sse.action('PROFILE_FIELD_SAVED', { field, value });
+  }
+
+  // All fields saved — generate the plan
+  sse.chunk('Got it! I now have everything I need. Building your plan — ');
+  const planner = await buildPlanner(intent, userId);
+  await planner.generate(sse.chunk, sse.action);
 }
 
 async function handleFieldAnswer(

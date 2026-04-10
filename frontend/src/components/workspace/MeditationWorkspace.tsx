@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useMeditationStore } from '../../store/meditationStore';
+import { useState, useEffect, useCallback } from 'react';
+import { useMeditationStore, MeditationPlan } from '../../store/meditationStore';
 import { MeditationPlanView } from '../MeditationPlanView/MeditationPlanView';
 import { MeditationMode } from '../MeditationMode/MeditationMode';
+import { PlanHistory, HistoryItem } from '../PlanHistory/PlanHistory';
+import { apiListMeditationPlans, apiGetMeditationPlan } from '../../services/apiService';
 import styles from './FeatureWorkspace.module.css';
 
 export function MeditationWorkspace() {
@@ -10,12 +12,44 @@ export function MeditationWorkspace() {
     isMeditationModeActive,
     startMeditationMode,
     exitMeditationMode,
+    history,
+    historyLoading,
+    setHistory,
+    setHistoryLoading,
   } = useMeditationStore();
   const [showPlan, setShowPlan] = useState(false);
+  const [viewingPlan, setViewingPlan] = useState<MeditationPlan | null>(null);
 
   useEffect(() => {
     if (currentPlan) setShowPlan(true);
   }, [currentPlan]);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const { plans } = await apiListMeditationPlans();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setHistory(plans as any[]);
+    } catch { /* silent */ }
+    finally { setHistoryLoading(false); }
+  }, [setHistory, setHistoryLoading]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  const historyItems: HistoryItem[] = history.map((p) => ({
+    _id: p._id,
+    icon: '🧘',
+    title: p.planSummary?.slice(0, 50) || 'Meditation Plan',
+    subtitle: `${p.level} · ${p.sessionDuration} min`,
+    date: new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
+
+  const handleSelect = async (id: string) => {
+    try {
+      const { plan } = await apiGetMeditationPlan(id);
+      setViewingPlan(plan as MeditationPlan);
+    } catch { /* silent */ }
+  };
 
   return (
     <div className={styles.workspace}>
@@ -59,6 +93,15 @@ export function MeditationWorkspace() {
         </div>
       )}
 
+      <PlanHistory
+        label="Meditation Plan History"
+        items={historyItems}
+        loading={historyLoading}
+        onRefresh={fetchHistory}
+        onSelect={handleSelect}
+        emptyText="No meditation plans yet. Ask the AI to create one."
+      />
+
       {showPlan && currentPlan && !isMeditationModeActive && (
         <MeditationPlanView
           plan={currentPlan}
@@ -67,6 +110,14 @@ export function MeditationWorkspace() {
             setShowPlan(false);
             startMeditationMode();
           }}
+        />
+      )}
+
+      {viewingPlan && (
+        <MeditationPlanView
+          plan={viewingPlan}
+          onClose={() => setViewingPlan(null)}
+          onStartSession={() => setViewingPlan(null)}
         />
       )}
 

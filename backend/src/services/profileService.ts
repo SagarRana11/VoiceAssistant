@@ -59,7 +59,7 @@ export function getMissingFields(
   return requiredFields.filter(f => {
     const val = (profile as unknown as Record<string, unknown>)[f];
     if (val == null || val === '') return true;
-    if (Array.isArray(val) && val.length === 0) return true;
+    // Empty arrays (e.g. injuries:[], allergies:[]) mean "user said none" — not missing
     return false;
   });
 }
