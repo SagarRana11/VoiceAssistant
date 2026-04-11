@@ -1,5 +1,7 @@
 import { EXERCISE_KNOWLEDGE_DOCS, KnowledgeDoc } from './knowledgeSources/exerciseKnowledge';
 import { getEmbedding } from './embedder';
+import { loadPdfAsKnowledgeDocs } from './pdfLoader';
+import { loadOrComputeEmbeddings } from './embeddingStore';
 
 interface VectorEntry {
   doc: KnowledgeDoc;
@@ -16,14 +18,28 @@ class InMemoryVectorStore {
     if (this.initPromise) return this.initPromise; // deduplicate concurrent calls
 
     this.initPromise = (async () => {
-      console.log('[VectorStore] Building embeddings for knowledge base...');
-      for (const doc of EXERCISE_KNOWLEDGE_DOCS) {
-        const text = `${doc.title}\n${doc.content}`;
-        const embedding = await getEmbedding(text);
-        this.entries.push({ doc, embedding });
+      console.log('[VectorStore] Loading exercise knowledge base...');
+
+      // Load PDF-based exercise docs
+      let pdfDocs: KnowledgeDoc[] = [];
+      try {
+        pdfDocs = await loadPdfAsKnowledgeDocs(
+          'Advanced_Exercise_Planner_Framework_2026.pdf',
+          'exercise',
+        );
+      } catch (err) {
+        console.warn('[VectorStore] Failed to load exercise PDF, continuing without it:', err);
       }
+
+      const allDocs = [...EXERCISE_KNOWLEDGE_DOCS, ...pdfDocs];
+
+      // Load from MongoDB cache or compute new embeddings
+      this.entries = await loadOrComputeEmbeddings('exercise', allDocs);
+
       this.initialized = true;
-      console.log(`[VectorStore] Ready — ${this.entries.length} documents indexed.`);
+      console.log(
+        `[VectorStore] Ready — ${this.entries.length} documents indexed (${EXERCISE_KNOWLEDGE_DOCS.length} hardcoded + ${pdfDocs.length} from PDF).`,
+      );
     })();
 
     return this.initPromise;
@@ -64,9 +80,11 @@ class InMemoryVectorStore {
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, magA = 0, magB = 0;
+  let dot = 0,
+    magA = 0,
+    magB = 0;
   for (let i = 0; i < a.length; i++) {
-    dot  += a[i] * b[i];
+    dot += a[i] * b[i];
     magA += a[i] * a[i];
     magB += b[i] * b[i];
   }

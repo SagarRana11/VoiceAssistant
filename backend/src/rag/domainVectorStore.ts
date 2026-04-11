@@ -1,9 +1,11 @@
 /**
  * Generic in-memory vector store that can be instantiated per knowledge domain.
  * Separate from the existing vectorStore singleton (which serves exercise docs).
+ * Embeddings are persisted in MongoDB via embeddingStore.
  */
 import { KnowledgeDoc } from './knowledgeSources/exerciseKnowledge';
 import { getEmbedding } from './embedder';
+import { loadOrComputeEmbeddings } from './embeddingStore';
 
 interface VectorEntry {
   doc: KnowledgeDoc;
@@ -11,9 +13,11 @@ interface VectorEntry {
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, magA = 0, magB = 0;
+  let dot = 0,
+    magA = 0,
+    magB = 0;
   for (let i = 0; i < a.length; i++) {
-    dot  += a[i] * b[i];
+    dot += a[i] * b[i];
     magA += a[i] * a[i];
     magB += b[i] * b[i];
   }
@@ -26,7 +30,10 @@ export class DomainVectorStore {
   private initPromise: Promise<void> | null = null;
   private readonly name: string;
 
-  constructor(name: string, private readonly docs: KnowledgeDoc[]) {
+  constructor(
+    name: string,
+    private readonly docs: KnowledgeDoc[],
+  ) {
     this.name = name;
   }
 
@@ -35,12 +42,13 @@ export class DomainVectorStore {
     if (this.initPromise) return this.initPromise;
 
     this.initPromise = (async () => {
-      console.log(`[DomainVectorStore:${this.name}] Building embeddings (${this.docs.length} docs)...`);
-      for (const doc of this.docs) {
-        const text = `${doc.title}\n${doc.content}`;
-        const embedding = await getEmbedding(text);
-        this.entries.push({ doc, embedding });
-      }
+      console.log(
+        `[DomainVectorStore:${this.name}] Loading embeddings (${this.docs.length} docs)...`,
+      );
+
+      // Load from MongoDB cache or compute new embeddings
+      this.entries = await loadOrComputeEmbeddings(this.name, this.docs);
+
       this.initialized = true;
       console.log(`[DomainVectorStore:${this.name}] Ready.`);
     })();

@@ -2,7 +2,6 @@
 const embeddingCache = new Map<string, number[]>();
 
 export async function getEmbedding(text: string): Promise<number[]> {
-  console.log("rag working !!!!!!!")
   const key = text.slice(0, 200);
   if (embeddingCache.has(key)) return embeddingCache.get(key)!;
 
@@ -34,7 +33,6 @@ export async function getEmbedding(text: string): Promise<number[]> {
   const data = (await response.json()) as { data: { embedding: number[] }[] };
   const embedding = data.data[0].embedding;
   embeddingCache.set(key, embedding);
-  console.log("embedding>>>>>", embedding)
   return embedding;
 }
 
