@@ -24,9 +24,10 @@ export async function speakWithElevenLabs(
       body: JSON.stringify({ text }),
     });
 
-    // 503 = not configured, 402/429 = quota — mark unavailable for session
-    if (res.status === 503 || res.status === 402 || res.status === 429) {
-      console.warn('[ElevenLabs] unavailable (status', res.status, ') — falling back to browser TTS');
+    // 401 quota_exceeded, 402, 429 rate-limit, 503 not configured → mark unavailable for session
+    if (res.status === 401 || res.status === 402 || res.status === 429 || res.status === 503) {
+      const body = await res.text().catch(() => '');
+      console.warn('[ElevenLabs] unavailable (status', res.status, body, ') — falling back to browser TTS');
       elevenLabsAvailable = false;
       return null;
     }

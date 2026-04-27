@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useLayoutStore, FeatureId } from '../../store/useLayoutStore';
 import { useAppStore } from '../../store/useAppStore';
 import styles from './Sidebar.module.css';
+import hospitalStyles from './Sidebar.hospital.module.css';
 
 interface NavItem {
   id: FeatureId;
@@ -25,7 +26,7 @@ const BOTTOM_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const { activeFeature, sidebarCollapsed, setActiveFeature, toggleSidebar } = useLayoutStore();
-  const { user, logout } = useAppStore();
+  const { user, logout, navigate } = useAppStore();
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -85,6 +86,18 @@ export function Sidebar() {
           />
         ))}
       </nav>
+
+      {/* ── Hospital shortcut ────────────────────────────────────────── */}
+      <div className={styles.bottom} style={{ paddingTop: 0 }}>
+        <button
+          className={hospitalStyles.hospitalBtn}
+          onClick={() => navigate('hospital')}
+          title="Hospital Cardiac Assistant"
+        >
+          <span className={hospitalStyles.hospitalIcon}>🏥</span>
+          {!sidebarCollapsed && <span className={hospitalStyles.hospitalLabel}>Hospital Assistant</span>}
+        </button>
+      </div>
 
       {/* ── Bottom section ────────────────────────────────────────────── */}
       <div className={styles.bottom}>

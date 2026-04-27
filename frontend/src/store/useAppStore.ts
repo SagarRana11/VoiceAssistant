@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { AppStore, AppPage, AssistantState, Message, RoleId, User } from '../types';
+import { AppStore, AppPage, AssistantState, AvatarProvider, Message, RoleId, User } from '../types';
 import { DEFAULT_ROLE } from '../constants/roles';
 
-const TOKEN_KEY = 'va_token';
-
-const VOICE_KEY = 'va_voice_enabled';
+const TOKEN_KEY    = 'va_token';
+const VOICE_KEY    = 'va_voice_enabled';
+const AVATAR_KEY   = 'va_avatar_provider';
 
 export const useAppStore = create<AppStore>((set) => ({
   user: null,
@@ -16,6 +16,7 @@ export const useAppStore = create<AppStore>((set) => ({
   error: null,
   currentPage: 'assistant' as AppPage,
   voiceEnabled: localStorage.getItem(VOICE_KEY) !== 'false',
+  avatarProvider: (localStorage.getItem(AVATAR_KEY) ?? 'heygen') as AvatarProvider,
 
   login: (user: User, token: string) => {
     localStorage.setItem(TOKEN_KEY, token);
@@ -72,4 +73,9 @@ export const useAppStore = create<AppStore>((set) => ({
       localStorage.setItem(VOICE_KEY, String(next));
       return { voiceEnabled: next };
     }),
+
+  setAvatarProvider: (p: AvatarProvider) => {
+    localStorage.setItem(AVATAR_KEY, p);
+    set({ avatarProvider: p });
+  },
 }));

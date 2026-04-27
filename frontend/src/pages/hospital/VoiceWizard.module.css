@@ -1,0 +1,423 @@
+/* ─── Shell: full-height two-column layout ────────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: 0;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .shell { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEFT — Avatar column (fills 100% height, no padding)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.avatarCol {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  border-right: 1px solid rgba(0,0,0,.08);
+  background: #0f172a;
+}
+
+/* ── Avatar wrapper — grows to fill the entire left panel ────────────────── */
+.avatarWrap {
+  flex: 1;
+  position: relative;
+  background: #0f172a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.didVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.staticAvatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(26,127,232,.15), rgba(14,165,160,.15));
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s;
+}
+
+.avatarSpeaking {
+  animation: avatarPulse 1.8s ease-in-out infinite;
+}
+
+.avatarThinking {
+  animation: avatarSpin 2.5s linear infinite;
+}
+
+@keyframes avatarPulse {
+  0%,100% { box-shadow: 0 0 0 0   rgba(14,165,160,.35); background: linear-gradient(135deg,rgba(26,127,232,.2),rgba(14,165,160,.2)); }
+  50%     { box-shadow: 0 0 0 20px rgba(14,165,160,.0);  background: linear-gradient(135deg,rgba(26,127,232,.35),rgba(14,165,160,.35)); }
+}
+
+@keyframes avatarSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Status badge — overlaid at bottom of video ──────────────────────────── */
+.statusBadge {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15,23,42,.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid;
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Interim transcript — overlaid just above the status badge ───────────── */
+.interimOverlay {
+  position: absolute;
+  bottom: 58px;
+  left: 12px;
+  right: 12px;
+  background: rgba(254,243,199,.92);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #92400e;
+  font-style: italic;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RIGHT — Content column
+   ═══════════════════════════════════════════════════════════════════════════ */
+.contentCol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Top bar: patient info + action buttons side-by-side ─────────────────── */
+.topBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  background: var(--h-white);
+  border: 1px solid var(--h-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--h-shadow);
+}
+
+.patientInfo { display: flex; flex-direction: column; gap: 2px; }
+.patientName { font-size: 15px; font-weight: 700; color: var(--h-text); }
+.patientDiag { font-size: 12.5px; color: var(--h-blue); font-weight: 600; }
+.patientSub  { font-size: 12px; color: var(--h-text-3); }
+
+.topActions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+/* ── Mic button (row-layout variant) ─────────────────────────────────────── */
+.micBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 2px solid var(--h-border);
+  border-radius: 10px;
+  background: var(--h-white);
+  color: var(--h-text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.micBtn:hover:not(:disabled) {
+  border-color: var(--h-blue);
+  color: var(--h-blue);
+  background: var(--h-blue-light);
+}
+.micBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+.micActive {
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%,100% { box-shadow: 0 0 0 0   rgba(220,38,38,.3); }
+  50%     { box-shadow: 0 0 0 8px rgba(220,38,38,.0); }
+}
+
+.replayBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid var(--h-border);
+  border-radius: 10px;
+  background: var(--h-white);
+  color: var(--h-text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.replayBtn:hover:not(:disabled) { background: var(--h-surface); border-color: #cbd5e1; }
+.replayBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.progressBar {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.pStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 56px;
+}
+
+.pDot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .2s;
+}
+
+.pDone .pDot   { background: #d1fae5; color: #059669; }
+.pActive .pDot { background: var(--h-blue); color: #fff; box-shadow: 0 0 0 4px rgba(26,127,232,.15); }
+
+.pLabel {
+  font-size: 9.5px;
+  color: #94a3b8;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 68px;
+}
+.pDone .pLabel   { color: #059669; }
+.pActive .pLabel { color: var(--h-blue); font-weight: 600; }
+
+/* ── Content card ────────────────────────────────────────────────────────── */
+.contentCard {
+  flex: 1;
+  background: var(--h-white);
+  border: 1px solid var(--h-border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--h-shadow);
+  overflow-y: auto;
+  min-height: 180px;
+}
+
+.stepTitle {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--h-text);
+  margin-bottom: 18px;
+  line-height: 1.3;
+}
+
+.bodyText {
+  font-size: 15px;
+  color: var(--h-text);
+  line-height: 1.85;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Thinking dots ───────────────────────────────────────────────────────── */
+.dots {
+  display: flex;
+  gap: 7px;
+  padding: 16px 0;
+}
+
+.dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--h-blue);
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.dots span:nth-child(2) { animation-delay: .2s; }
+.dots span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes dotBounce {
+  0%,80%,100% { transform: scale(.65); opacity: .35; }
+  40%         { transform: scale(1);   opacity: 1;   }
+}
+
+/* ── Q&A block ───────────────────────────────────────────────────────────── */
+.qaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qaLabel {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--h-blue);
+  background: var(--h-blue-light);
+  border: 1px solid var(--h-blue-mid);
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.backToStepBtn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--h-blue);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity .15s;
+}
+.backToStepBtn:hover:not(:disabled) { opacity: .7; }
+.backToStepBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Text input ──────────────────────────────────────────────────────────── */
+.inputRow {
+  display: flex;
+  gap: 10px;
+  background: var(--h-white);
+  border: 1.5px solid var(--h-border);
+  border-radius: 12px;
+  padding: 7px 7px 7px 16px;
+  box-shadow: var(--h-shadow);
+  transition: border-color .15s;
+  flex-shrink: 0;
+}
+.inputRow:focus-within { border-color: var(--h-blue); }
+
+.qInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--h-text);
+  background: transparent;
+  font-family: inherit;
+}
+.qInput::placeholder { color: var(--h-text-3); }
+.qInput:disabled { opacity: .5; }
+
+.askBtn {
+  padding: 9px 20px;
+  background: var(--h-blue-light);
+  color: var(--h-blue);
+  border: 1px solid var(--h-blue-mid);
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+}
+.askBtn:hover:not(:disabled) { background: var(--h-blue); color: #fff; }
+.askBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Navigation row ──────────────────────────────────────────────────────── */
+.navRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.needDrBtn {
+  padding: 11px 20px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: inherit;
+}
+.needDrBtn:hover:not(:disabled) { background: #fee2e2; }
+.needDrBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.nextBtn {
+  flex: 1;
+  padding: 13px 24px;
+  background: linear-gradient(135deg, var(--h-blue), #1565c0);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s, transform .12s;
+  font-family: inherit;
+  text-align: center;
+}
+.nextBtn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+.nextBtn:disabled { opacity: .5; cursor: not-allowed; }

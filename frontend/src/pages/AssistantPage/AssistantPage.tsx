@@ -3,21 +3,28 @@ import { useAppStore } from '../../store/useAppStore';
 import { useConversation } from '../../hooks/useConversation';
 import { useAgentConversation } from '../../hooks/useAgentConversation';
 import { useDIDStream } from '../../hooks/useDIDStream';
+import { useHeyGenStream } from '../../hooks/useHeyGenStream';
 import { useAssessment } from '../../hooks/useAssessment';
 import { AssistantContext } from '../../context/AssistantContext';
 import { AppLayout } from '../../components/AppLayout/AppLayout';
 import styles from './AssistantPage.module.css';
 
 export function AssistantPage() {
-  const { error, setError } = useAppStore();
+  const { error, setError, avatarProvider } = useAppStore();
 
-  // ── D-ID streaming avatar ──────────────────────────────────────────────
-  const did = useDIDStream();
+  // ── Avatar streaming (D-ID or HeyGen, selected by avatarProvider) ─────
+  const did    = useDIDStream();
+  const heygen = useHeyGenStream();
+  const avatar = avatarProvider === 'heygen' ? heygen
+               : avatarProvider === 'did'    ? did
+               : null;
+
   useEffect(() => {
-    did.connect();
-    return () => did.disconnect();
+    if (!avatar) return;
+    avatar.connect();
+    return () => avatar.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [avatarProvider]);
 
   // ── Standard role-based conversation ──────────────────────────────────
   const {
@@ -32,8 +39,8 @@ export function AssistantPage() {
     stopSession,
     submitText,
   } = useConversation({
-    externalSpeak:    did.isConnected ? did.speak    : undefined,
-    isExternalActive: did.isConnected,
+    externalSpeak:    avatar?.isConnected ? avatar.speak    : undefined,
+    isExternalActive: avatar?.isConnected ?? false,
   });
 
   // ── Agent conversation (health intents → plans) ────────────────────────
@@ -68,13 +75,13 @@ export function AssistantPage() {
     handleGlobalSubmit,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assessment: assessment as any,
-    did,
+    did: avatar ?? did,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [
     interimTranscript, streamingResponse, conversationState,
     isListening, isSpeaking, isSpeechSupported, currentChunk,
     agent.streamingResponse, agent.isSpeaking,
-    assessment, did,
+    assessment, avatar,
   ]);
 
   return (

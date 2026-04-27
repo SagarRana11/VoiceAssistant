@@ -3,9 +3,15 @@ import { useAppStore } from './store/useAppStore';
 import { useProfileStore } from './store/profileStore';
 import { apiGetMe } from './services/apiService';
 import { fetchProfile } from './services/profileService';
-import { LoginPage } from './pages/LoginPage/LoginPage';
+import { LoginPage }    from './pages/LoginPage/LoginPage';
 import { AssistantPage } from './pages/AssistantPage/AssistantPage';
-import { ProfilePage } from './pages/profile/ProfilePage';
+import { ProfilePage }  from './pages/profile/ProfilePage';
+import { HospitalPage } from './pages/hospital/HospitalPage';
+import { ConsentPage }  from './pages/hospital/ConsentPage';
+import { DischargePage } from './pages/hospital/DischargePage';
+import { ChatPage }     from './pages/hospital/ChatPage';
+import { FollowupPage } from './pages/hospital/FollowupPage';
+import { AvatarPage }   from './pages/hospital/AvatarPage';
 
 export default function App() {
   const { user, token, currentPage, login, logout, navigate } = useAppStore();
@@ -34,9 +40,13 @@ export default function App() {
 
   if (!user) return <LoginPage />;
 
-  if (currentPage === 'profile') {
-    return <ProfilePage onBack={() => navigate('assistant')} />;
-  }
+  if (currentPage === 'profile')           return <ProfilePage onBack={() => navigate('assistant')} />;
+  if (currentPage === 'hospital')          return <HospitalPage />;
+  if (currentPage === 'hospital-consent')  return <ConsentPage />;
+  if (currentPage === 'hospital-discharge') return <DischargePage />;
+  if (currentPage === 'hospital-chat')     return <ChatPage />;
+  if (currentPage === 'hospital-followup') return <FollowupPage />;
+  if (currentPage === 'hospital-avatar')   return <AvatarPage />;
 
   return <AssistantPage />;
 }

@@ -6,10 +6,12 @@ import authRoutes       from './routes/auth';
 import chatRoutes       from './routes/chat';
 import ttsRoutes        from './routes/tts';
 import didRoutes        from './routes/did';
+import heygenRoutes     from './routes/heygen';
 import assessmentRoutes from './routes/assessment';
 import profileRoutes    from './routes/profile';
 import agentRoutes      from './routes/agent';
 import planRoutes       from './routes/plans';
+import hospitalRoutes   from './routes/hospital';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -42,10 +44,12 @@ app.use('/api/auth',       authRoutes);
 app.use('/api/chat',       chatRoutes);
 app.use('/api/tts',        ttsRoutes);
 app.use('/api/did',        didRoutes);
+app.use('/api/heygen',     heygenRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/profile',    profileRoutes);
 app.use('/api/agent',      agentRoutes);
 app.use('/api/plans',      planRoutes);
+app.use('/api/hospital',   hospitalRoutes);
 
 // ─── 404 + Error Handlers ─────────────────────────────────────────────────────
 app.use(notFound);

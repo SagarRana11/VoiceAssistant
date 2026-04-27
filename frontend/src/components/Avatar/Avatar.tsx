@@ -1,23 +1,43 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AssistantState } from '../../types';
 import { ConversationState } from '../../utils/emotionDetector';
 import styles from './Avatar.module.css';
 
 interface Props {
-  state:              AssistantState;
-  roleColor:          string;
-  currentChunk?:      string;
+  state: AssistantState;
+  roleColor: string;
+  currentChunk?: string;
   conversationState?: ConversationState;
-  didVideoRef?:       React.RefObject<HTMLVideoElement>;
-  didConnected?:      boolean;
+  didVideoRef?: React.RefObject<HTMLVideoElement>;
+  didConnected?: boolean;
 }
 
 export function Avatar({
-  state, roleColor, currentChunk, conversationState, didVideoRef, didConnected,
+  state,
+  roleColor,
+  currentChunk,
+  conversationState,
+  didVideoRef,
+  didConnected,
 }: Props) {
   const mouthRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
   const phaseRef = useRef<number>(0);
+
+  // videoReady: true as soon as the video element has decodable frames.
+  // Drives visibility independently of isConnected state, so a brief
+  // isConnected toggle (e.g. React StrictMode cleanup) doesn't flash-hide the video.
+  const [videoReady, setVideoReady] = useState(false);
+
+  // When D-ID connects, ensure the video element actually plays (guards against
+  // autoplay policy or a srcObject that was set before the element mounted).
+  useEffect(() => {
+    if (!didConnected || !didVideoRef?.current) return;
+    const video = didVideoRef.current;
+    if (video.srcObject && video.paused) {
+      video.play().catch(err => console.warn('[DID] Avatar play retry failed:', err));
+    }
+  }, [didConnected, didVideoRef]);
 
   // Amplitude-driven mouth animation (only used when D-ID is not active)
   useEffect(() => {
@@ -63,16 +83,18 @@ export function Avatar({
           style={{ '--role-color': roleColor } as React.CSSProperties}
         />
 
-        {/* D-ID video — full face, fades in when connected */}
+        {/* D-ID video — fades in when the element has actual decodable frames */}
         <video
           ref={didVideoRef}
           autoPlay
           playsInline
-          className={`${styles.didVideo} ${didConnected ? styles.didVideoActive : ''}`}
+          onCanPlay={() => setVideoReady(true)}
+          onEmptied={() => setVideoReady(false)}
+          className={`${styles.didVideo} ${videoReady ? styles.didVideoActive : ''}`}
         />
 
-        {/* SVG avatar face — fades out when D-ID connects */}
-        <div className={`${styles.face} ${didConnected ? styles.faceHidden : ''}`}>
+        {/* SVG avatar face — fades out once video has real content */}
+        <div className={`${styles.face} ${videoReady ? styles.faceHidden : ''}`}>
           {/* Thinking dots */}
           {state === 'thinking' && (
             <div className={styles.thinkingDots}>
@@ -110,9 +132,11 @@ function Eye({ state, delay }: { state: AssistantState; delay: string }) {
       <div className={`${styles.pupil} ${state === 'thinking' ? styles.pupilThinking : ''}`} />
       <div
         className={`${styles.eyelid} ${
-          state === 'thinking' ? styles.eyeClosed :
-          state === 'speaking' ? styles.eyeSlowBlink :
-          styles.eyeBlink
+          state === 'thinking'
+            ? styles.eyeClosed
+            : state === 'speaking'
+              ? styles.eyeSlowBlink
+              : styles.eyeBlink
         }`}
         style={{ animationDelay: delay }}
       />
@@ -121,23 +145,37 @@ function Eye({ state, delay }: { state: AssistantState; delay: string }) {
 }
 
 // ─── Mouth ────────────────────────────────────────────────────────────────────
-function Mouth({ state, mouthRef }: { state: AssistantState; mouthRef: React.RefObject<HTMLDivElement> }) {
+function Mouth({
+  state,
+  mouthRef,
+}: {
+  state: AssistantState;
+  mouthRef: React.RefObject<HTMLDivElement>;
+}) {
   if (state === 'speaking')
     return (
-      <div className={styles.mouthSpeaking} ref={mouthRef} style={{ '--amp': '0.3' } as React.CSSProperties}>
-        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className={styles.mouthBar} style={{ '--bar-i': i } as React.CSSProperties} />
+      <div
+        className={styles.mouthSpeaking}
+        ref={mouthRef}
+        style={{ '--amp': '0.3' } as React.CSSProperties}
+      >
+        {[0, 1, 2, 3, 4, 5, 6].map(i => (
+          <div
+            key={i}
+            className={styles.mouthBar}
+            style={{ '--bar-i': i } as React.CSSProperties}
+          />
         ))}
       </div>
     );
   if (state === 'listening') return <div className={styles.mouthListening} />;
-  if (state === 'thinking')  return <div className={styles.mouthThinking} />;
+  if (state === 'thinking') return <div className={styles.mouthThinking} />;
   return <div className={styles.mouthIdle} />;
 }
 
 const STATE_LABELS: Record<AssistantState, string> = {
-  idle:      'Ready',
+  idle: 'Ready',
   listening: 'Listening...',
-  thinking:  'Thinking...',
-  speaking:  'Speaking...',
+  thinking: 'Thinking...',
+  speaking: 'Speaking...',
 };

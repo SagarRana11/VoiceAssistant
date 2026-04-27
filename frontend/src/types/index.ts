@@ -30,7 +30,15 @@ export interface User {
 }
 
 // ─── Navigation ────────────────────────────────────────────────────────────
-export type AppPage = 'assistant' | 'profile';
+export type AppPage =
+  | 'assistant'
+  | 'profile'
+  | 'hospital'
+  | 'hospital-consent'
+  | 'hospital-discharge'
+  | 'hospital-chat'
+  | 'hospital-followup'
+  | 'hospital-avatar';
 
 // ─── Feature / Workspace IDs ────────────────────────────────────────────────
 export type FeatureId =
@@ -41,6 +49,9 @@ export type FeatureId =
   | 'meditation'
   | 'profile'
   | 'settings';
+
+// ─── Avatar provider ───────────────────────────────────────────────────────
+export type AvatarProvider = 'heygen' | 'did' | 'none';
 
 // ─── Zustand Store Shape ───────────────────────────────────────────────────
 export interface AppStore {
@@ -64,6 +75,8 @@ export interface AppStore {
   navigate: (page: AppPage) => void;
   voiceEnabled: boolean;
   toggleVoice: () => void;
+  avatarProvider: AvatarProvider;
+  setAvatarProvider: (p: AvatarProvider) => void;
 }
 
 // ─── Browser Speech API ambient types ─────────────────────────────────────

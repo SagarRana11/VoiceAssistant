@@ -76,6 +76,40 @@
   50%       { opacity: 0.3; }
 }
 
+/* ─── Avatar provider toggle ─────────────────────────────────────────────── */
+.providerToggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.providerBtn {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.providerBtn:hover {
+  color: #9ca3af;
+}
+
+.providerBtnActive {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
 /* ─── Status label ───────────────────────────────────────────────────────── */
 .statusLabel {
   font-size: 13px;

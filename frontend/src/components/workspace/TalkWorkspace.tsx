@@ -1,4 +1,5 @@
 import { useAppStore } from '../../store/useAppStore';
+import { AvatarProvider } from '../../types';
 import { ROLES } from '../../constants/roles';
 import { Avatar } from '../Avatar/Avatar';
 import { MicButton } from '../MicButton/MicButton';
@@ -6,8 +7,14 @@ import { SoundWave } from '../SoundWave/SoundWave';
 import { useAssistantContext } from '../../context/AssistantContext';
 import styles from './TalkWorkspace.module.css';
 
+const PROVIDERS: { id: AvatarProvider; label: string }[] = [
+  { id: 'heygen', label: 'HeyGen' },
+  { id: 'did',    label: 'D-ID' },
+  { id: 'none',   label: 'Animated' },
+];
+
 export function TalkWorkspace() {
-  const { assistantState, currentRole } = useAppStore();
+  const { assistantState, currentRole, avatarProvider, setAvatarProvider } = useAppStore();
   const {
     interimTranscript,
     conversationState,
@@ -21,7 +28,6 @@ export function TalkWorkspace() {
     agentIsSpeaking,
     did,
   } = useAssistantContext();
-
   const role = ROLES[currentRole];
   const isThinking = assistantState === 'thinking';
   const isSessionActive = isListening || isThinking || isSpeaking;
@@ -29,10 +35,10 @@ export function TalkWorkspace() {
   const statusLabel = isListening
     ? 'Listening...'
     : isThinking
-    ? 'Thinking...'
-    : isSpeaking || agentIsSpeaking
-    ? 'Speaking...'
-    : 'Ready to listen';
+      ? 'Thinking...'
+      : isSpeaking || agentIsSpeaking
+        ? 'Speaking...'
+        : 'Ready to listen';
 
   return (
     <div className={styles.workspace}>
@@ -58,11 +64,7 @@ export function TalkWorkspace() {
       </div>
 
       {/* Sound wave */}
-      <SoundWave
-        isActive={isSpeaking || agentIsSpeaking}
-        color={role.color}
-        barCount={14}
-      />
+      <SoundWave isActive={isSpeaking || agentIsSpeaking} color={role.color} barCount={14} />
 
       {/* Interim transcript banner */}
       {interimTranscript && (
@@ -72,8 +74,24 @@ export function TalkWorkspace() {
         </div>
       )}
 
+      {/* Avatar provider switcher */}
+      <div className={styles.providerToggle}>
+        {PROVIDERS.map(({ id, label }) => (
+          <button
+            key={id}
+            className={`${styles.providerBtn} ${avatarProvider === id ? styles.providerBtnActive : ''}`}
+            onClick={() => setAvatarProvider(id)}
+            aria-pressed={avatarProvider === id}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Status label */}
-      <p className={styles.statusLabel} aria-live="polite">{statusLabel}</p>
+      <p className={styles.statusLabel} aria-live="polite">
+        {statusLabel}
+      </p>
 
       {/* Controls */}
       <div className={styles.controls}>
@@ -87,11 +105,7 @@ export function TalkWorkspace() {
         />
 
         {isSessionActive && (
-          <button
-            className={styles.stopBtn}
-            onClick={stopSession}
-            aria-label="Stop session"
-          >
+          <button className={styles.stopBtn} onClick={stopSession} aria-label="Stop session">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
               <rect x="3" y="3" width="18" height="18" rx="3" />
             </svg>
@@ -103,7 +117,14 @@ export function TalkWorkspace() {
       {/* Speech not supported notice */}
       {!isSpeechSupported && (
         <div className={styles.noticeBox} role="alert">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />

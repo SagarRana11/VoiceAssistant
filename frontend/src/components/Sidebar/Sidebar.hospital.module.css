@@ -1,0 +1,41 @@
+.hospitalBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 16px);
+  margin: 0 8px 6px;
+  padding: 10px 10px;
+  border: 1.5px solid rgba(26, 127, 232, 0.25);
+  border-radius: 10px;
+  background: rgba(26, 127, 232, 0.06);
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  min-height: 40px;
+}
+
+.hospitalBtn:hover {
+  background: rgba(26, 127, 232, 0.14);
+  border-color: rgba(26, 127, 232, 0.5);
+  color: #93c5fd;
+}
+
+.hospitalIcon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.hospitalLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
