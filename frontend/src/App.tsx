@@ -12,6 +12,9 @@ import { DischargePage } from './pages/hospital/DischargePage';
 import { ChatPage }     from './pages/hospital/ChatPage';
 import { FollowupPage } from './pages/hospital/FollowupPage';
 import { AvatarPage }   from './pages/hospital/AvatarPage';
+import { CathLabPage }  from './pages/cathlab/CathLabPage';
+import { CathLabInterviewPage } from './pages/cathlab/CathLabInterviewPage';
+import { CathLabSummaryPage }   from './pages/cathlab/CathLabSummaryPage';
 
 export default function App() {
   const { user, token, currentPage, login, logout, navigate } = useAppStore();
@@ -47,6 +50,9 @@ export default function App() {
   if (currentPage === 'hospital-chat')     return <ChatPage />;
   if (currentPage === 'hospital-followup') return <FollowupPage />;
   if (currentPage === 'hospital-avatar')   return <AvatarPage />;
+  if (currentPage === 'cathlab')           return <CathLabPage />;
+  if (currentPage === 'cathlab-interview') return <CathLabInterviewPage />;
+  if (currentPage === 'cathlab-summary')   return <CathLabSummaryPage />;
 
   return <AssistantPage />;
 }

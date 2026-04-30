@@ -1,0 +1,219 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+/* ─── Patient banner ─────────────────────────────────────────────────────── */
+.patientBanner {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.patientName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.patientMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.bannerActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.printBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.printBtn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+.newBtn {
+  padding: 8px 18px;
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.newBtn:hover { background: #1e40af; }
+
+/* ─── Clinical flags card ────────────────────────────────────────────────── */
+.flagsCard {
+  background: #fffbeb;
+  border: 1.5px solid #fbbf24;
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flagsTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.flagItem {
+  border-top: 1px solid #fde68a;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.flagType {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #b45309;
+}
+
+.flagMsg {
+  font-size: 13.5px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+/* ─── Loading ────────────────────────────────────────────────────────────── */
+.loadingMsg {
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+  padding: 12px;
+}
+
+/* ─── Module card ────────────────────────────────────────────────────────── */
+.moduleCard {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.moduleNum {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.moduleTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  flex: 1;
+}
+
+.moduleBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  background: #e2e8f0;
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.emptyModule {
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ─── Field grid ─────────────────────────────────────────────────────────── */
+.fieldGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: baseline;
+}
+.fieldRow:last-child { border-bottom: none; }
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldValue {
+  font-size: 14px;
+  color: #1e293b;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .fieldRow { grid-template-columns: 1fr; gap: 4px; }
+  .fieldLabel { font-size: 11px; }
+}
+
+@media print {
+  .bannerActions { display: none; }
+  .page { padding: 0; }
+}

@@ -38,7 +38,10 @@ export type AppPage =
   | 'hospital-discharge'
   | 'hospital-chat'
   | 'hospital-followup'
-  | 'hospital-avatar';
+  | 'hospital-avatar'
+  | 'cathlab'
+  | 'cathlab-interview'
+  | 'cathlab-summary';
 
 // ─── Feature / Workspace IDs ────────────────────────────────────────────────
 export type FeatureId =

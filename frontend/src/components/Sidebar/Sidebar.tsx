@@ -97,6 +97,14 @@ export function Sidebar() {
           <span className={hospitalStyles.hospitalIcon}>🏥</span>
           {!sidebarCollapsed && <span className={hospitalStyles.hospitalLabel}>Hospital Assistant</span>}
         </button>
+        <button
+          className={hospitalStyles.hospitalBtn}
+          onClick={() => navigate('cathlab')}
+          title="Cath Lab H&P — Sofiya NP"
+        >
+          <span className={hospitalStyles.hospitalIcon}>🫀</span>
+          {!sidebarCollapsed && <span className={hospitalStyles.hospitalLabel}>Cath Lab H&amp;P</span>}
+        </button>
       </div>
 
       {/* ── Bottom section ────────────────────────────────────────────── */}
