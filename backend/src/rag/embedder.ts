@@ -3,6 +3,7 @@ const embeddingCache = new Map<string, number[]>();
 
 export async function getEmbedding(text: string): Promise<number[]> {
   const key = text.slice(0, 200);
+  console.log('key in getEmbeddings>>>>>', key);
   if (embeddingCache.has(key)) return embeddingCache.get(key)!;
 
   const apiKey = process.env.OPENAI_API_KEY;
@@ -13,6 +14,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
     return mock;
   }
 
+  // generating embeddings for query
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {

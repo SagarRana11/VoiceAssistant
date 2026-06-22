@@ -12,15 +12,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'talk',       icon: '🎙️', label: 'Talk With Me',         shortcut: '1' },
-  { id: 'wellbeing',  icon: '🧠', label: 'Well Being',            shortcut: '2' },
-  { id: 'exercise',   icon: '💪', label: 'Exercise Planner',      shortcut: '3' },
-  { id: 'diet',       icon: '🥗', label: 'Diet Planner',          shortcut: '4' },
-  { id: 'meditation', icon: '🧘', label: 'Meditation',            shortcut: '5' },
+  { id: 'talk', icon: '🎙️', label: 'Talk With Me', shortcut: '1' },
+  { id: 'wellbeing', icon: '🧠', label: 'Well Being', shortcut: '2' },
+  { id: 'exercise', icon: '💪', label: 'Exercise Planner', shortcut: '3' },
+  { id: 'diet', icon: '🥗', label: 'Diet Planner', shortcut: '4' },
+  { id: 'meditation', icon: '🧘', label: 'Meditation', shortcut: '5' },
 ];
 
 const BOTTOM_ITEMS: NavItem[] = [
-  { id: 'profile',  icon: '👤', label: 'Profile'  },
+  { id: 'profile', icon: '👤', label: 'Profile' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 
@@ -31,7 +31,11 @@ export function Sidebar() {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const map: Record<string, FeatureId> = {
-        '1': 'talk', '2': 'wellbeing', '3': 'exercise', '4': 'diet', '5': 'meditation',
+        '1': 'talk',
+        '2': 'wellbeing',
+        '3': 'exercise',
+        '4': 'diet',
+        '5': 'meditation',
       };
       if (map[e.key]) setActiveFeature(map[e.key]);
     },
@@ -48,7 +52,14 @@ export function Sidebar() {
       {/* ── Brand ─────────────────────────────────────────────────────── */}
       <div className={styles.brand}>
         <div className={styles.brandIcon} aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
             <line x1="12" y1="19" x2="12" y2="23" />
@@ -66,17 +77,22 @@ export function Sidebar() {
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={sidebarCollapsed ? 'Expand' : 'Collapse'}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            {sidebarCollapsed
-              ? <path d="M9 18l6-6-6-6" />
-              : <path d="M15 18l-6-6 6-6" />}
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            {sidebarCollapsed ? <path d="M9 18l6-6-6-6" /> : <path d="M15 18l-6-6 6-6" />}
           </svg>
         </button>
       </div>
 
       {/* ── Main nav ──────────────────────────────────────────────────── */}
       <nav className={styles.nav} aria-label="Main features">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map(item => (
           <NavButton
             key={item.id}
             item={item}
@@ -88,7 +104,7 @@ export function Sidebar() {
       </nav>
 
       {/* ── Hospital shortcut ────────────────────────────────────────── */}
-      <div className={styles.bottom} style={{ paddingTop: 0 }}>
+      {/* <div className={styles.bottom} style={{ paddingTop: 0 }}>
         <button
           className={hospitalStyles.hospitalBtn}
           onClick={() => navigate('hospital')}
@@ -105,12 +121,12 @@ export function Sidebar() {
           <span className={hospitalStyles.hospitalIcon}>🫀</span>
           {!sidebarCollapsed && <span className={hospitalStyles.hospitalLabel}>Cath Lab H&amp;P</span>}
         </button>
-      </div>
+      </div> */}
 
       {/* ── Bottom section ────────────────────────────────────────────── */}
       <div className={styles.bottom}>
         <div className={styles.divider} role="separator" />
-        {BOTTOM_ITEMS.map((item) => (
+        {BOTTOM_ITEMS.map(item => (
           <NavButton
             key={item.id}
             item={item}
@@ -142,7 +158,14 @@ export function Sidebar() {
                 aria-label="Log out"
                 title="Log out"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
@@ -151,12 +174,15 @@ export function Sidebar() {
             </>
           )}
           {sidebarCollapsed && (
-            <button
-              className={styles.logoutBtnCollapsed}
-              onClick={logout}
-              aria-label="Log out"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <button className={styles.logoutBtnCollapsed} onClick={logout} aria-label="Log out">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
@@ -190,7 +216,9 @@ function NavButton({
       tabIndex={0}
     >
       {isActive && <span className={styles.activeBar} aria-hidden="true" />}
-      <span className={styles.navIcon} aria-hidden="true">{item.icon}</span>
+      <span className={styles.navIcon} aria-hidden="true">
+        {item.icon}
+      </span>
       {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
       {!collapsed && item.shortcut && (
         <kbd className={styles.kbd} aria-label={`Shortcut: ${item.shortcut}`}>

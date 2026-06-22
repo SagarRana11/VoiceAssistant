@@ -9,8 +9,8 @@ import styles from './TalkWorkspace.module.css';
 
 const PROVIDERS: { id: AvatarProvider; label: string }[] = [
   { id: 'heygen', label: 'HeyGen' },
-  { id: 'did',    label: 'D-ID' },
-  { id: 'none',   label: 'Animated' },
+  { id: 'did', label: 'D-ID' },
+  { id: 'none', label: 'Animated' },
 ];
 
 export function TalkWorkspace() {
@@ -75,7 +75,7 @@ export function TalkWorkspace() {
       )}
 
       {/* Avatar provider switcher */}
-      <div className={styles.providerToggle}>
+      {/* <div className={styles.providerToggle}>
         {PROVIDERS.map(({ id, label }) => (
           <button
             key={id}
@@ -86,7 +86,7 @@ export function TalkWorkspace() {
             {label}
           </button>
         ))}
-      </div>
+      </div> */}
 
       {/* Status label */}
       <p className={styles.statusLabel} aria-live="polite">
