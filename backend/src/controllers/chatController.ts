@@ -4,15 +4,27 @@ import { streamOpenAI, ChatMessage } from '../services/openaiService';
 import { AuthRequest } from '../middleware/auth';
 import { ROLES } from '../constants/roles';
 import { retrieveExerciseDocs, retrieveDietDocs, retrieveMeditationDocs } from '../rag/retriever';
+import { rewriteQueryForRetrieval } from '../rag/queryRewriter';
+import { rerankDocs } from '../rag/reRanker';
 
-async function getRagContext(roleId: string, message: string): Promise<string> {
+async function getRagContext(
+  roleId: string,
+  message: string,
+  history: ChatMessage[],
+): Promise<string> {
   try {
     if (roleId === 'fitness') {
-      const docs = await retrieveExerciseDocs(message, 3);
+      const query = await rewriteQueryForRetrieval(message, 'fitness', history);
+      const candidates = await retrieveExerciseDocs(query, 15); // fetch wide
+      console.log('candidates>>>', candidates);
+      const docs = await rerankDocs(query, candidates, 5); // rerank narrow
+      console.log('docs>>>', docs);
       if (docs.length === 0) return '';
       return '\n\n=== RELEVANT FITNESS KNOWLEDGE ===\n' + docs.join('\n\n');
     }
     if (roleId === 'health') {
+      // Rewrite computed for logging; unused until health retrievers accept a free-text query param
+      await rewriteQueryForRetrieval(message, 'health', history);
       const [dietDocs, meditationDocs] = await Promise.all([
         retrieveDietDocs(undefined, undefined, undefined, undefined, 2),
         retrieveMeditationDocs(undefined, undefined, undefined, undefined, 2),
@@ -28,10 +40,7 @@ async function getRagContext(roleId: string, message: string): Promise<string> {
 }
 
 // ─── POST /api/chat/conversations ─────────────────────────────────────────────
-export async function createConversation(
-  req: AuthRequest,
-  res: Response
-): Promise<void> {
+export async function createConversation(req: AuthRequest, res: Response): Promise<void> {
   const { roleId, roleName } = req.body;
 
   if (!roleId || !roleName) {
@@ -56,17 +65,14 @@ export async function createConversation(
 }
 
 // ─── GET /api/chat/conversations ──────────────────────────────────────────────
-export async function getConversations(
-  req: AuthRequest,
-  res: Response
-): Promise<void> {
+export async function getConversations(req: AuthRequest, res: Response): Promise<void> {
   const conversations = await Conversation.find({ userId: req.user!.id })
     .sort({ updatedAt: -1 })
     .select('roleId roleName createdAt updatedAt messages')
     .lean();
 
   // Return summary (last message, message count) not full message arrays
-  const summaries = conversations.map((c) => ({
+  const summaries = conversations.map(c => ({
     _id: c._id,
     roleId: c.roleId,
     roleName: c.roleName,
@@ -80,10 +86,7 @@ export async function getConversations(
 }
 
 // ─── GET /api/chat/conversations/:id ─────────────────────────────────────────
-export async function getConversation(
-  req: AuthRequest,
-  res: Response
-): Promise<void> {
+export async function getConversation(req: AuthRequest, res: Response): Promise<void> {
   const conversation = await Conversation.findOne({
     _id: req.params.id,
     userId: req.user!.id,
@@ -98,10 +101,7 @@ export async function getConversation(
 }
 
 // ─── DELETE /api/chat/conversations/:id ──────────────────────────────────────
-export async function deleteConversation(
-  req: AuthRequest,
-  res: Response
-): Promise<void> {
+export async function deleteConversation(req: AuthRequest, res: Response): Promise<void> {
   const result = await Conversation.findOneAndDelete({
     _id: req.params.id,
     userId: req.user!.id,
@@ -116,10 +116,7 @@ export async function deleteConversation(
 }
 
 // ─── POST /api/chat/message  (SSE streaming) ──────────────────────────────────
-export async function sendMessage(
-  req: AuthRequest,
-  res: Response
-): Promise<void> {
+export async function sendMessage(req: AuthRequest, res: Response): Promise<void> {
   const { conversationId, message, roleId } = req.body;
 
   if (!conversationId || !message || !roleId) {
@@ -159,13 +156,17 @@ export async function sendMessage(
 
     // Build OpenAI message array (system + last 8 messages for context)
     const role = ROLES[roleId as keyof typeof ROLES];
-    const ragContext = await getRagContext(roleId, message);
+    const priorMessages = conversation.messages.slice(-4).map(m => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    }));
+    const ragContext = await getRagContext(roleId, message, priorMessages);
     const systemPrompt = (role?.systemPrompt ?? ROLES.therapist.systemPrompt) + ragContext;
 
     const recentMessages = conversation.messages.slice(-8);
     const openAIMessages: ChatMessage[] = [
       { role: 'system', content: systemPrompt },
-      ...recentMessages.map((m) => ({
+      ...recentMessages.map(m => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),

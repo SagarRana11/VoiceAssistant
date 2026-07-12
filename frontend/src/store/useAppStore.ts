@@ -4,7 +4,9 @@ import { DEFAULT_ROLE } from '../constants/roles';
 
 const TOKEN_KEY    = 'va_token';
 const VOICE_KEY    = 'va_voice_enabled';
-const AVATAR_KEY   = 'va_avatar_provider';
+// Bumped to _v2 to force all existing users onto the new default (MuseTalk),
+// ignoring any provider previously stored under the old key.
+const AVATAR_KEY   = 'va_avatar_provider_v2';
 
 export const useAppStore = create<AppStore>((set) => ({
   user: null,
@@ -16,7 +18,7 @@ export const useAppStore = create<AppStore>((set) => ({
   error: null,
   currentPage: 'assistant' as AppPage,
   voiceEnabled: localStorage.getItem(VOICE_KEY) !== 'false',
-  avatarProvider: (localStorage.getItem(AVATAR_KEY) ?? 'heygen') as AvatarProvider,
+  avatarProvider: (localStorage.getItem(AVATAR_KEY) ?? 'musetalk') as AvatarProvider,
 
   login: (user: User, token: string) => {
     localStorage.setItem(TOKEN_KEY, token);

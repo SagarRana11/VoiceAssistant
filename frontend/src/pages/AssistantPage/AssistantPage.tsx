@@ -4,6 +4,7 @@ import { useConversation } from '../../hooks/useConversation';
 import { useAgentConversation } from '../../hooks/useAgentConversation';
 import { useDIDStream } from '../../hooks/useDIDStream';
 import { useHeyGenStream } from '../../hooks/useHeyGenStream';
+import { useMuseTalkStream } from '../../hooks/useMuseTalkStream';
 import { useAssessment } from '../../hooks/useAssessment';
 import { AssistantContext } from '../../context/AssistantContext';
 import { AppLayout } from '../../components/AppLayout/AppLayout';
@@ -13,10 +14,12 @@ export function AssistantPage() {
   const { error, setError, avatarProvider } = useAppStore();
 
   // ── Avatar streaming (D-ID or HeyGen, selected by avatarProvider) ─────
-  const did    = useDIDStream();
-  const heygen = useHeyGenStream();
-  const avatar = avatarProvider === 'heygen' ? heygen
-               : avatarProvider === 'did'    ? did
+  const did      = useDIDStream();
+  const heygen   = useHeyGenStream();
+  const musetalk = useMuseTalkStream();
+  const avatar = avatarProvider === 'heygen'   ? heygen
+               : avatarProvider === 'did'      ? did
+               : avatarProvider === 'musetalk' ? musetalk
                : null;
 
   useEffect(() => {
@@ -87,15 +90,7 @@ export function AssistantPage() {
   return (
     <AssistantContext.Provider value={ctxValue}>
       <div className={styles.page}>
-        <AppLayout
-          streamingResponse={streamingResponse}
-          agentStreamingResponse={agent.streamingResponse}
-          interimTranscript={interimTranscript}
-          onGlobalSubmit={handleGlobalSubmit}
-          collectAllFields={agent.collectAllFields}
-          onSubmitBulkFields={agent.submitBulkFields}
-          isAgentThinking={agent.isThinking}
-        />
+        <AppLayout onGlobalSubmit={handleGlobalSubmit} />
 
         {/* ── Error toast ─────────────────────────────────────────────── */}
         {error && (

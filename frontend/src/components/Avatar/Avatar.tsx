@@ -10,6 +10,8 @@ interface Props {
   conversationState?: ConversationState;
   didVideoRef?: React.RefObject<HTMLVideoElement>;
   didConnected?: boolean;
+  /** Static reference face shown when no live/generated video is playing (e.g. MuseTalk idle). */
+  posterSrc?: string;
 }
 
 export function Avatar({
@@ -19,6 +21,7 @@ export function Avatar({
   conversationState,
   didVideoRef,
   didConnected,
+  posterSrc,
 }: Props) {
   const mouthRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
@@ -83,6 +86,17 @@ export function Avatar({
           style={{ '--role-color': roleColor } as React.CSSProperties}
         />
 
+        {/* Static reference-face poster (MuseTalk idle) — behind the video,
+            shown whenever no generated clip is currently playing. */}
+        {posterSrc && (
+          <img
+            src={posterSrc}
+            alt="Avatar"
+            className={`${styles.didVideo} ${styles.didVideoActive}`}
+            style={{ objectFit: 'cover', opacity: videoReady ? 0 : 1 }}
+          />
+        )}
+
         {/* D-ID video — fades in when the element has actual decodable frames */}
         <video
           ref={didVideoRef}
@@ -93,8 +107,8 @@ export function Avatar({
           className={`${styles.didVideo} ${videoReady ? styles.didVideoActive : ''}`}
         />
 
-        {/* SVG avatar face — fades out once video has real content */}
-        <div className={`${styles.face} ${videoReady ? styles.faceHidden : ''}`}>
+        {/* SVG avatar face — hidden when a poster or video is present */}
+        <div className={`${styles.face} ${(videoReady || posterSrc) ? styles.faceHidden : ''}`}>
           {/* Thinking dots */}
           {state === 'thinking' && (
             <div className={styles.thinkingDots}>

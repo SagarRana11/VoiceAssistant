@@ -1,33 +1,18 @@
 import { Sidebar } from '../Sidebar/Sidebar';
-import { ConversationPanel } from '../ConversationPanel/ConversationPanel';
+import { CodeChat } from '../CodeChat/CodeChat';
 import { WorkspaceRouter } from '../workspace/WorkspaceRouter';
 import { GlobalInputBar } from '../GlobalInputBar/GlobalInputBar';
-import type { CollectFieldSpec } from '../../hooks/useAgentConversation';
 import styles from './AppLayout.module.css';
 
 interface Props {
-  streamingResponse: string;
-  agentStreamingResponse: string;
-  interimTranscript: string;
   onGlobalSubmit: (message: string, mode: 'voice' | 'text') => Promise<void>;
-  collectAllFields: CollectFieldSpec[] | null;
-  onSubmitBulkFields: (fields: Record<string, string>) => Promise<void>;
-  isAgentThinking: boolean;
 }
 
 /**
- * 3-panel AI OS layout:
- *  [Sidebar] [Workspace + GlobalInputBar] [ConversationPanel]
+ * AI OS layout:
+ *  [Sidebar] [Workspace + GlobalInputBar]  + floating CodeChat (bottom-right)
  */
-export function AppLayout({
-  streamingResponse,
-  agentStreamingResponse,
-  interimTranscript,
-  onGlobalSubmit,
-  collectAllFields,
-  onSubmitBulkFields,
-  isAgentThinking,
-}: Props) {
+export function AppLayout({ onGlobalSubmit }: Props) {
   return (
     <div className={styles.shell}>
       {/* ── Left: Feature navigation ─────────────────────────────────── */}
@@ -46,15 +31,8 @@ export function AppLayout({
         </div>
       </main>
 
-      {/* ── Right: Conversation panel ─────────────────────────────────── */}
-      <ConversationPanel
-        streamingResponse={streamingResponse}
-        agentStreamingResponse={agentStreamingResponse}
-        interimTranscript={interimTranscript}
-        collectAllFields={collectAllFields}
-        onSubmitBulkFields={onSubmitBulkFields}
-        isAgentThinking={isAgentThinking}
-      />
+      {/* ── Floating code chat (bottom-right) ─────────────────────────── */}
+      <CodeChat />
     </div>
   );
 }

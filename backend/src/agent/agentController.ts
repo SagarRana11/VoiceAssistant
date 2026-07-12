@@ -8,6 +8,7 @@ import { MeditationPlanner } from '../planners/MeditationPlanner';
 import { DietPlanner } from '../planners/DietPlanner';
 import { streamOpenAI, openaiChat, ChatMessage } from '../services/openaiService';
 import { IUserProfile } from '../models/UserProfile';
+import { rewriteQueryForRetrieval } from '../rag/queryRewriter';
 
 // ─── Required fields for each planner intent ──────────────────────────────────
 interface FieldSpec {
@@ -326,7 +327,6 @@ export async function handleAgentMessage(req: AuthRequest, res: Response): Promi
     } else if (intent === 'update_profile') {
       await handleUpdateProfileIntent(userId, message, sse);
     } else {
-      // General health chat with profile context
       await handleGeneralChat(userId, message, conversationHistory, sse);
     }
   } catch (err) {
@@ -579,6 +579,10 @@ async function handleGeneralChat(
 ): Promise<void> {
   const profile = await toolGetUserProfile(userId);
   const profileSummary = summarizeProfileForContext(profile);
+
+  // Rewrite query with conversation context — ready for when RAG is added to this path
+  const rewrittenQuery = await rewriteQueryForRetrieval(message, 'health', history.slice(-4));
+  console.log('[AgentController:GeneralChat] rewritten query:', rewrittenQuery);
 
   const systemPrompt = `You are a warm, knowledgeable personal health assistant.
 Be conversational and concise — 2-3 sentences maximum per response, suitable for voice output.

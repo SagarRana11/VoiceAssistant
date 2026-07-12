@@ -7,6 +7,7 @@ import chatRoutes from './routes/chat';
 import ttsRoutes from './routes/tts';
 import didRoutes from './routes/did';
 import heygenRoutes from './routes/heygen';
+import musetalkRoutes from './routes/musetalk';
 import assessmentRoutes from './routes/assessment';
 import profileRoutes from './routes/profile';
 import agentRoutes from './routes/agent';
@@ -14,6 +15,7 @@ import planRoutes from './routes/plans';
 import hospitalRoutes from './routes/hospital';
 import cathLabRoutes from './routes/cathlab';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import codewriter from './routes/codeWriter';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '5000', 10);
@@ -46,12 +48,14 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/tts', ttsRoutes);
 app.use('/api/did', didRoutes);
 app.use('/api/heygen', heygenRoutes);
+app.use('/api/musetalk', musetalkRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/cathlab', cathLabRoutes);
+app.use('/api/code', codewriter);
 
 // ─── 404 + Error Handlers ─────────────────────────────────────────────────────
 app.use(notFound);

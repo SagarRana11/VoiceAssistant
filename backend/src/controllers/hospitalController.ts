@@ -8,6 +8,7 @@ import { HospitalChatHistory } from '../models/HospitalChatHistory';
 import { FollowupLog } from '../models/FollowupLog';
 import { streamOpenAI, openaiChat, ChatMessage } from '../services/openaiService';
 import { retrieveHospitalDocs, classifyQueryCategory } from '../rag/hospitalRetriever';
+import { rewriteQueryForRetrieval } from '../rag/queryRewriter';
 
 // ─── SSE helper ──────────────────────────────────────────────────────────────
 function makeSSE(res: Response) {
@@ -133,7 +134,8 @@ export async function hospitalChat(req: AuthRequest, res: Response): Promise<voi
 
     // Retrieve relevant knowledge docs
     const category = classifyQueryCategory(message);
-    const docs = await retrieveHospitalDocs(message, category, patient.diagnosis, 3);
+    const retrievalQuery = await rewriteQueryForRetrieval(message, 'hospital', history);
+    const docs = await retrieveHospitalDocs(retrievalQuery, category, patient.diagnosis, 3);
     const context =
       docs.length > 0 ? `\n\nRelevant medical knowledge:\n${docs.join('\n\n---\n\n')}` : '';
 
@@ -594,7 +596,8 @@ export async function hospitalChatSync(req: AuthRequest, res: Response): Promise
     }
 
     const category = classifyQueryCategory(message);
-    const docs = await retrieveHospitalDocs(message, category, patient.diagnosis, 3);
+    const retrievalQuery = await rewriteQueryForRetrieval(message, 'hospital');
+    const docs = await retrieveHospitalDocs(retrievalQuery, category, patient.diagnosis, 3);
     const context = docs.length > 0 ? `\n\nRelevant knowledge:\n${docs.join('\n\n---\n\n')}` : '';
 
     const systemPrompt =

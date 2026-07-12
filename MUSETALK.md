@@ -1,5 +1,7 @@
 # MuseTalk Integration Guide
 
+> **Complete end-to-end flow:** see [`MuseTalk/docs/FLOW.md`](MuseTalk/docs/FLOW.md) — runtime request flow, file map, inference pipeline, config, run/verify, gotchas.
+
 ## What is MuseTalk?
 
 MuseTalk is a real-time, **local** audio-driven lip-sync model by Tencent Music Entertainment (Lyra Lab). It takes an audio clip + a reference face image and generates a video where the face's lips move in sync with the audio — all running on your own machine, no API key needed.
@@ -54,9 +56,19 @@ Avatar video plays in TalkWorkspace
 - FFmpeg is a video processing tool required for reading/writing video files
 - On Linux: download static binary; on Mac: `brew install ffmpeg`
 
-### Phase 5 — Download Model Weights (~5-8GB)
-- 6 AI model files downloaded automatically from HuggingFace
-- Stored in `MuseTalk/models/` directory
+### Phase 5 — Download Model Weights (~5-8GB) — use OFFICIAL repo weights
+- Weights come from the **official MuseTalk github repo** (its own download script), not a separate manual HuggingFace pull.
+- The repo's `download_weights.sh` is stale for current tooling, so use **`download_weights_fixed.sh`** (same official weights):
+  - `huggingface_hub` 1.x renamed `huggingface-cli` → `hf`
+  - `gdown` dropped the `--id` flag
+  - drops the `hf-mirror.com` CN mirror (unreliable outside CN)
+- Run inside the conda env:
+  ```bash
+  conda activate MuseTalk
+  cd MuseTalk
+  bash download_weights_fixed.sh   # downloads into MuseTalk/models/
+  ```
+- Stored in `MuseTalk/models/` (gitignored).
 
 | Model | Purpose |
 |-------|---------|
@@ -93,17 +105,24 @@ Avatar video plays in TalkWorkspace
 
 ## Files Modified / Created
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `MUSETALK.md` | Created | This documentation |
-| `MuseTalk/musetalk_server.py` | Created | FastAPI wrapper server |
-| `backend/.env` | Modified | Add MuseTalk config vars |
-| `backend/src/routes/musetalk.ts` | Created | Express route |
-| `backend/src/controllers/musetalKController.ts` | Created | Business logic |
-| `backend/src/index.ts` | Modified | Register new route |
-| `frontend/src/hooks/useMuseTalkStream.ts` | Created | React hook |
-| `frontend/src/workspaces/TalkWorkspace.tsx` | Modified | Add avatar option |
-| `frontend/src/store/useAppStore.ts` | Modified | Add 'musetalk' type |
+| File | Action | Purpose | Status |
+|------|--------|---------|--------|
+| `MUSETALK.md` | Created | This documentation | ✅ |
+| `MuseTalk/` | Cloned | Official TMElyralab/MuseTalk repo (gitignored) | ✅ |
+| `MuseTalk/download_weights_fixed.sh` | Created | Weight downloader fixed for current `hf`/`gdown` | ✅ |
+| `MuseTalk/musetalk_server.py` | Created | FastAPI wrapper, `/lipsync` + `/health`, port 5003 | ✅ |
+| `backend/.env` | Modified | `MUSETALK_ENABLED`, `MUSETALK_API_URL` | ✅ |
+| `backend/src/routes/musetalk.ts` | Created | Express route (raw-audio body, `protect`) | ✅ |
+| `backend/src/controllers/musetalkController.ts` | Created | Proxy: raw WAV → MuseTalk multipart → MP4 | ✅ |
+| `backend/src/index.ts` | Modified | Register `/api/musetalk` | ✅ |
+| `frontend/src/hooks/useMuseTalkStream.ts` | Created | React hook (TTS → lipsync → play) | ✅ |
+| `frontend/src/pages/AssistantPage/AssistantPage.tsx` | Modified | Select MuseTalk avatar by provider | ✅ |
+| `frontend/src/components/workspace/TalkWorkspace.tsx` | Modified | Add MuseTalk provider option | ✅ |
+| `frontend/src/types/index.ts` | Modified | `AvatarProvider` += `'musetalk'` | ✅ |
+
+**Data flow (implemented):** `TalkWorkspace` picks provider → `useMuseTalkStream.speak(text)` → `POST /api/tts` (audio) → `POST /api/musetalk/lipsync` (raw audio) → backend proxy → `musetalk_server.py POST /lipsync` → MuseTalk v1.5 → MP4 → played in `videoRef`.
+
+> Note: doc originally planned `frontend/src/store/useAppStore.ts` for the type; actual `AvatarProvider` union lives in `frontend/src/types/index.ts` (edited there). Controller filename fixed to `musetalkController.ts` (doc had a typo'd capital K).
 
 ---
 

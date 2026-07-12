@@ -54,7 +54,7 @@ export type FeatureId =
   | 'settings';
 
 // ─── Avatar provider ───────────────────────────────────────────────────────
-export type AvatarProvider = 'heygen' | 'did' | 'none';
+export type AvatarProvider = 'heygen' | 'did' | 'musetalk' | 'none';
 
 // ─── Zustand Store Shape ───────────────────────────────────────────────────
 export interface AppStore {

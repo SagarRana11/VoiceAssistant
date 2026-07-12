@@ -1,0 +1,14 @@
+{
+  // CodeWriter lives outside backend/src, so the root tsconfig (rootDir:./src,
+  // include:src/**) never sees it. This standalone config compiles the module
+  // on its own. `extends` inherits compilerOptions only — include/exclude are
+  // NOT inherited across extends, so they are redeclared here.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist-codewriter",
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist-codewriter"]
+}

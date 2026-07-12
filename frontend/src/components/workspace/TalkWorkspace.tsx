@@ -10,6 +10,7 @@ import styles from './TalkWorkspace.module.css';
 const PROVIDERS: { id: AvatarProvider; label: string }[] = [
   { id: 'heygen', label: 'HeyGen' },
   { id: 'did', label: 'D-ID' },
+  { id: 'musetalk', label: 'MuseTalk' },
   { id: 'none', label: 'Animated' },
 ];
 
@@ -60,6 +61,7 @@ export function TalkWorkspace() {
           conversationState={conversationState}
           didVideoRef={did.videoRef}
           didConnected={did.isConnected}
+          posterSrc={avatarProvider === 'musetalk' ? '/musetalk-avatar.png' : undefined}
         />
       </div>
 

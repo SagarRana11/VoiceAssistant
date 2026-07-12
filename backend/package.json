@@ -10,10 +10,13 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
-    "format:check": "prettier --check src"
+    "format:check": "prettier --check src",
+    "build:codewriter": "tsc -p CodeWriter/tsconfig.codewriter.json",
+    "test:codewriter": "tsx --test \"CodeWriter/**/*.test.ts\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cohere-ai": "^8.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
