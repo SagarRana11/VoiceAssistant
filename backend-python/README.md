@@ -1,85 +1,95 @@
-# backend-python — Chat service (FastAPI)
+# backend-python — Auth + Chat service (FastAPI + Postgres)
 
-Python port of `backend/src/routes/chat.ts` (+ `chatController.ts` and its RAG pipeline).
-Only chat lives here; auth, profile, plans, etc. stay on the Node backend.
+Standalone Python backend: auth (register/login/me) and role-based RAG chat.
+**No dependency on the Node backend at runtime** — own Postgres DB, own JWT secret, own `.env`.
+(Knowledge *source files* are still read from `backend/src/rag/knowledgeSources/` at ingest time.)
+
+Frontend: `frontend-next/` (Next.js) proxies `/api/*` here.
 
 ## Run
 
 ```bash
+# Postgres 17 + pgvector (brew's pgvector ships for pg17/18, not pg16)
+brew install postgresql@17 pgvector
+brew services start postgresql@17
+/opt/homebrew/opt/postgresql@17/bin/createdb voice_assistant
+
 cd backend-python
 uv venv -p 3.12 .venv && uv pip install -p .venv/bin/python -r requirements.txt
-.venv/bin/python -m app.main        # http://localhost:5002
+.venv/bin/python -m app.main        # http://localhost:5002 — creates tables + vector extension on startup
+.venv/bin/python -m app.ingest      # optional pre-warm of embeddings (also runs lazily on first RAG use)
 ```
 
-Run the Node backend too (port 5001) — login/JWT still come from it.
-Vite proxies `/api/chat/*` → `:5002` (override with `CHAT_API_TARGET`), rest of `/api` → `:5001`.
+Needs Ollama running with `nomic-embed-text` for RAG embeddings (default provider).
 
-## Config
-Reads `backend-python/.env` first, then falls back to `backend/.env`.
-### LLM provider (LangChain)
+## Config (`backend-python/.env` only)
 | Var | Default | Notes |
 |---|---|---|
-| `LLM_PROVIDER` | `gemini` | `gemini` \| `openai` \| `mock`. Falls back to mock if the chosen provider's key is missing |
-| `GEMINI_API_KEY` | — | Google AI Studio key, used when provider = gemini |
-| `GEMINI_MODEL` | `gemini-3.5-flash` | pinned; `*-lite` models reject `thinking_budget=0` |
-| `OPENAI_MODEL` | `gpt-4o-mini` | |
+| `DATABASE_URL` | `postgresql+asyncpg://localhost/voice_assistant` | |
+| `JWT_SECRET` | — (required) | Own secret; Node tokens are **not** accepted |
+| `JWT_EXPIRES_DAYS` | `7` | |
+| `CLIENT_URL` | `http://localhost:3000` | CORS origin (Next.js dev) |
+| `PY_PORT` | `5002` | |
+| `LLM_PROVIDER` | `gemini` | `gemini` \| `openai` \| `mock` (falls back to mock if key missing) |
+| `GEMINI_API_KEY` / `OPENAI_API_KEY` | — | |
+| `GEMINI_MODEL` / `OPENAI_MODEL` | `gemini-3.5-flash` / `gpt-4o-mini` | |
+| `EMBEDDING_PROVIDER` | `ollama` | `ollama` (nomic, 768-dim) \| `openai` (text-embedding-3-small, 1536-dim). Column size follows it — switching needs `knowledge_embeddings` dropped & re-ingested |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | |
+| `COHERE_API_KEY` | — | empty → no rerank |
 
-Chat + query rewrite use the selected provider (`ChatOpenAI` / `ChatGoogleGenerativeAI`).
-Embeddings **always** use OpenAI `text-embedding-3-small` (stored Mongo vectors were made with it),
-so RAG semantic search still needs `OPENAI_API_KEY`; without it only tag-based retrieval works.
-Rerank via `langchain-cohere`.
+## Database (Postgres, SQLAlchemy async, `app/db.py`)
+| Table | Columns |
+|---|---|
+| `users` | id UUID, name, email (unique, lowercased), password_hash (bcrypt 12), timestamps |
+| `conversations` | id UUID, user_id → users (cascade), role_id, role_name, timestamps |
+| `messages` | id UUID, conversation_id → conversations (cascade), role, content, timestamp |
+| `knowledge_embeddings` | doc_id+domain unique, title, category, content, tags TEXT[] (lowercased), embedding VECTOR, content_hash, model |
 
-### Embeddings (`EMBEDDING_PROVIDER`, default `ollama`)
-- `ollama`: local `nomic-embed-text:latest` at `OLLAMA_BASE_URL` (default `http://127.0.0.1:11434`).
-  Vectors (768-dim) stored in Mongo collection **`knowledgeembeddings_nomic`**.
-  Queries use the `search_query: ` prefix, docs use `search_document: `.
-- `openai`: `text-embedding-3-small`, reads Node's `knowledgeembeddings` (1536-dim).
+Tables are created via `create_all` on startup (no migrations yet).
 
-**Embedding flow** (same as Node's `loadOrComputeEmbeddings`): on the first RAG request for a domain,
-`rag._load` → `ingest.sync_domain` embeds any docs missing or changed in `knowledgeembeddings_nomic`
-and saves them; stored vectors are reused after that. Optional pre-warm via CLI:
-```bash
-.venv/bin/python -m app.ingest            # all domains
-.venv/bin/python -m app.ingest exercise   # one domain
-```
-Reads docs from the source files (`backend/src/rag/knowledgeSources/`: `<domain>Knowledge.ts` + PDFs listed in `sources.PDF_FILES`), embeds with nomic, upserts by `{docId, domain}`.
-Skips docs whose md5(title+content) is unchanged; deletes docs gone from the source.
+## Endpoints
+Errors are always `{ "message": "..." }`. Bodies are Pydantic models (`app/schemas.py`); invalid body → 400 `{message: "<field>: <reason>"}`.
 
-Needs `MONGODB_URI`, `JWT_SECRET` (same as Node); optional `OPENAI_API_KEY` (empty → mock replies),
-`COHERE_API_KEY` (empty → no rerank), `PY_PORT` (default 5002).
+**Auth** (`app/auth_routes.py`)
+- `POST /api/auth/register` `{name, email, password}` → 201 `{success, token, user}` · 400 validation · 409 duplicate email
+- `POST /api/auth/login` `{email, password}` → `{success, token, user}` · 401 bad credentials
+- `GET /api/auth/me` (Bearer) → `{success, user}`
+- `user` = `{id, name, email, initials}`; token = HS256 JWT `{id, exp}`
+
+**Chat** (Bearer required; `app/main.py`)
+- `POST /api/chat/conversations` `{roleId, roleName}`
+- `GET /api/chat/conversations` → summaries with `messageCount`, `lastMessage`
+- `GET /api/chat/conversations/{id}` / `DELETE …/{id}` (bad/foreign id → 404)
+- `POST /api/chat/message` `{conversationId, message, roleId}` → SSE: `data: {"content"}` … `data: {"done", conversationId}` / `data: {"error"}`
 
 ## Files
 | File | Role |
 |---|---|
-| `app/main.py` | FastAPI app, `/api/chat` routes, SSE streaming for `/message` |
-| `app/auth.py` | Verifies Node-issued JWT (HS256, `{id}` payload), loads user from Mongo |
-| `app/db.py` | Async PyMongo client; `users`, `conversations`, `knowledgeembeddings` |
-| `app/llm.py` | LangChain chat models (OpenAI / Gemini), streaming, embeddings (+ mock mode) |
-| `app/rag.py` | Query rewrite → vector search → Cohere rerank; builds system-prompt context |
-| `app/sources.py` | Parses knowledge source files (TS arrays + PDFs via pypdf) into docs |
-| `app/ingest.py` | Pipeline: source files → nomic-embed-text → `knowledgeembeddings_nomic` |
-| `app/roles.json` | Role system prompts, exported from `backend/src/constants/roles.ts` |
-
-## Endpoints (same contract as Node)
-- `POST /api/chat/conversations` `{roleId, roleName}`
-- `GET /api/chat/conversations`
-- `GET /api/chat/conversations/{id}`
-- `DELETE /api/chat/conversations/{id}`
-- `POST /api/chat/message` `{conversationId, message, roleId}` → SSE: `data: {"content"}` … `data: {"done", conversationId}` / `data: {"error"}`
+| `app/main.py` | FastAPI app, lifespan `init_db`, CORS, `/api/chat` routes, SSE streaming, JSON serializers |
+| `app/schemas.py` | Pydantic request/response models (typed like TS interfaces, validated at runtime; camelCase JSON via aliases) |
+| `app/auth_routes.py` | `/api/auth` register / login / me |
+| `app/auth.py` | bcrypt hash/check, JWT sign, `current_user` dependency |
+| `app/db.py` | Async engine/session, ORM models, `init_db` (vector extension + tables) |
+| `app/config.py` | Env config |
+| `app/llm.py` | LangChain chat models (Gemini / OpenAI / mock), streaming, embeddings |
+| `app/rag.py` | Query rewrite → pgvector cosine search / tag overlap → Cohere rerank |
+| `app/ingest.py` | Source docs → embeddings → upsert into `knowledge_embeddings` (hash-skip, stale delete) |
+| `app/sources.py` | Parses knowledge source files (TS arrays + PDFs) into docs |
+| `app/roles.json` | Role system prompts |
 
 ## Chat flow
-1. JWT check → load conversation (owned by user) → `$push` user message.
+1. JWT → user from Postgres → load conversation (must belong to user) → insert user message.
 2. RAG (`rag.get_rag_context`):
-   - **fitness**: rewrite query (gpt-4o-mini → keywords) → top 15 cosine over `exercise` embeddings → Cohere rerank to 5.
-   - **health**: tag search + 2 semantic extras over `diet` and `meditation` (top 2 each, same as Node defaults).
+   - **fitness**: rewrite query → top 15 by `embedding <=> q` over `exercise` → Cohere rerank to 5.
+   - **health**: tag overlap (`tags && …`) + 2 semantic extras over `diet` and `meditation`.
    - therapist / career: no RAG.
-3. System prompt = role prompt + RAG context; plus last 8 messages → OpenAI stream → SSE chunks.
-4. `$push` assistant message, send `done`.
+   - First use of a domain per process runs `ingest.sync_domain` (embeds new/changed docs only).
+3. System prompt = role prompt + RAG context + last 8 messages → LLM stream → SSE chunks.
+4. Insert assistant message, bump `updated_at`, send `done`.
 
-## Limitations / status
-- With `EMBEDDING_PROVIDER=ollama`, Python reads the source files (incl. PDFs) itself and computes doc embeddings; with `openai` it reads Node's stored vectors.
-  Node backend populates them on its first RAG request (`loadOrComputeEmbeddings`).
-- Embeddings cached in-process; restart after re-ingesting knowledge.
-- If `roles.ts` changes, regenerate `app/roles.json`.
+## Status
+2026-09-24: Mongo → Postgres/pgvector migration done; own auth added. Verified with curl: register/login/me
+(409/401 paths), conversation CRUD, SSE streaming, ingest (exercise 18, diet 10, meditation 10), fitness + health RAG.
+Existing Mongo users/conversations were not migrated — users register again.
 
-Status (2026-09-23): all 5 chat routes ported and tested against real Mongo; streaming verified.
+Next: `general` role with query-routed RAG (classifier picks domain/tags from the message).

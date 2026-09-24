@@ -6,36 +6,28 @@ EMBEDDING_PROVIDER=ollama they are read from the source files
 (backend/src/rag/knowledgeSources, see app/sources.py) and embedded by nomic-embed-text into `knowledgeembeddings_nomic`
 (computed on first use per domain and stored; later loads reuse them).
 """
-import math
 from functools import lru_cache
 
 from langchain_core.documents import Document
+from sqlalchemy import select
 
 from . import llm
-from .config import COHERE_API_KEY, EMBEDDING_PROVIDER
-from .db import knowledge_embeddings, knowledge_embeddings_nomic
+from .config import COHERE_API_KEY
+from .db import KnowledgeEmbedding as KE, Session
 from .ingest import sync_domain
 
-_stores: dict[str, list[dict]] = {}
+_synced: set[str] = set()
 
 
-async def _load(domain: str) -> list[dict]:
-    if domain not in _stores:
-        if EMBEDDING_PROVIDER == "ollama":
-            # Like Node's loadOrComputeEmbeddings: embed missing/changed docs once, reuse stored ones after.
-            await sync_domain(domain)
-            coll = knowledge_embeddings_nomic
-        else:
-            coll = knowledge_embeddings
-        cursor = coll.find({"domain": domain}).sort("_id", 1)
-        _stores[domain] = await cursor.to_list(None)
-        print(f"[RAG] {domain}: {len(_stores[domain])} docs loaded from MongoDB")
-    return _stores[domain]
+async def _ensure_synced(domain: str) -> None:
+    # Like Node's loadOrComputeEmbeddings: embed missing/changed docs once per process, reuse stored ones after.
+    if domain not in _synced:
+        await sync_domain(domain)
+        _synced.add(domain)
 
 
-def _cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)) + 1e-10)
+def _row(e: KE) -> dict:
+    return {"docId": e.doc_id, "title": e.title, "content": e.content, "tags": e.tags}
 
 
 def _fmt(doc: dict) -> str:
@@ -43,24 +35,33 @@ def _fmt(doc: dict) -> str:
 
 
 async def similarity_search(domain: str, query: str, top_k: int) -> list[dict]:
-    entries = await _load(domain)
-    if not entries:
-        return []
+    await _ensure_synced(domain)
     try:
         q = await llm.embed(query)
     except Exception as err:
         # Tag search still works without embeddings — degrade instead of dropping all context.
         print(f"[RAG] embedding failed, skipping semantic search: {err}")
         return []
-    return sorted(entries, key=lambda e: _cosine(q, e["embedding"]), reverse=True)[:top_k]
+    async with Session() as s:
+        rows = await s.scalars(
+            select(KE).where(KE.domain == domain).order_by(KE.embedding.cosine_distance(q)).limit(top_k)
+        )
+        return [_row(e) for e in rows]
 
 
 async def search_by_tags(domain: str, tags: list[str], top_k: int) -> list[dict]:
-    entries = await _load(domain)
-    tag_set = {t.lower() for t in tags}
-    matches = [e for e in entries if any(t.lower() in tag_set for t in e.get("tags", []))]
+    await _ensure_synced(domain)
+    tag_list = [t.lower() for t in tags]
+    async with Session() as s:
+        rows = await s.scalars(
+            select(KE)
+            .where(KE.domain == domain, KE.tags.overlap(tag_list))
+            .order_by(KE.id)
+            .limit(top_k)
+        )
+        matches = [_row(e) for e in rows]
     if len(matches) >= top_k:
-        return matches[:top_k]
+        return matches
     seen = {e["docId"] for e in matches}
     for e in await similarity_search(domain, " ".join(tags), top_k):
         if e["docId"] not in seen:

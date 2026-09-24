@@ -1,6 +1,6 @@
 """
-Build/refresh `knowledgeembeddings_nomic`.
-Called automatically by rag._load on first use of a domain; the CLI is optional
+Build/refresh the Postgres `knowledge_embeddings` table (pgvector).
+Called automatically by rag._ensure_synced on first use of a domain; the CLI is optional
 (e.g. to pre-warm).
 
 Source: the actual knowledge files in backend/src/rag/knowledgeSources/
@@ -15,11 +15,12 @@ hash changes; docs removed from the source are removed here too.
 import asyncio
 import hashlib
 import sys
-from datetime import datetime, timezone
+from sqlalchemy import delete, select
+from sqlalchemy.dialects.postgresql import insert
 
 from . import llm
-from .config import OLLAMA_EMBED_MODEL
-from .db import knowledge_embeddings_nomic
+from .config import EMBEDDING_PROVIDER, OLLAMA_EMBED_MODEL
+from .db import KnowledgeEmbedding as KE, Session, now
 from .sources import load_domain_docs
 
 DOMAINS = ["exercise", "diet", "meditation"]
@@ -33,46 +34,44 @@ def _hash(doc: dict) -> str:
 
 async def sync_domain(domain: str) -> int:
     """Returns number of docs (re)embedded."""
-    await knowledge_embeddings_nomic.create_index([("docId", 1), ("domain", 1)], unique=True)
+    model = OLLAMA_EMBED_MODEL if EMBEDDING_PROVIDER == "ollama" else "text-embedding-3-small"
     source = load_domain_docs(domain)
-    existing = {
-        d["docId"]: d.get("contentHash")
-        async for d in knowledge_embeddings_nomic.find({"domain": domain}, {"docId": 1, "contentHash": 1})
-    }
+    async with Session() as s:
+        existing = dict((await s.execute(select(KE.doc_id, KE.content_hash).where(KE.domain == domain))).all())
 
-    todo = [d for d in source if existing.get(d["docId"]) != _hash(d)]
-    for i in range(0, len(todo), BATCH):
-        batch = todo[i : i + BATCH]
-        vectors = await llm.embed_documents([f"{d['title']}\n{d['content']}" for d in batch])
-        now = datetime.now(timezone.utc)
-        for d, vec in zip(batch, vectors):
-            await knowledge_embeddings_nomic.update_one(
-                {"docId": d["docId"], "domain": domain},
-                {
-                    "$set": {
-                        "title": d["title"],
-                        "category": d.get("category", ""),
-                        "content": d["content"],
-                        "tags": d.get("tags", []),
-                        "embedding": vec,
-                        "contentHash": _hash(d),
-                        "model": OLLAMA_EMBED_MODEL,
-                        "updatedAt": now,
-                    },
-                    "$setOnInsert": {"createdAt": now},
-                },
-                upsert=True,
-            )
+        todo = [d for d in source if existing.get(d["docId"]) != _hash(d)]
+        for i in range(0, len(todo), BATCH):
+            batch = todo[i : i + BATCH]
+            vectors = await llm.embed_documents([f"{d['title']}\n{d['content']}" for d in batch])
+            ts = now()
+            for d, vec in zip(batch, vectors):
+                values = {
+                    "title": d["title"],
+                    "category": d.get("category", ""),
+                    "content": d["content"],
+                    "tags": [t.lower() for t in d.get("tags", [])],
+                    "embedding": vec,
+                    "content_hash": _hash(d),
+                    "model": model,
+                    "updated_at": ts,
+                }
+                stmt = insert(KE).values(doc_id=d["docId"], domain=domain, created_at=ts, **values)
+                await s.execute(stmt.on_conflict_do_update(constraint="uq_knowledge_doc_domain", set_=values))
+            await s.commit()
 
-    stale = set(existing) - {d["docId"] for d in source}
-    if stale:
-        await knowledge_embeddings_nomic.delete_many({"domain": domain, "docId": {"$in": list(stale)}})
+        stale = set(existing) - {d["docId"] for d in source}
+        if stale:
+            await s.execute(delete(KE).where(KE.domain == domain, KE.doc_id.in_(stale)))
+            await s.commit()
 
     print(f"[Ingest:{domain}] {len(source)} docs, {len(todo)} embedded, {len(stale)} removed")
     return len(todo)
 
 
 async def main(domains: list[str]) -> None:
+    from .db import init_db
+
+    await init_db()
     for domain in domains:
         await sync_domain(domain)
 
