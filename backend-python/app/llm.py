@@ -1,5 +1,5 @@
 """
-LLM layer (LangChain). Chat provider is switchable: OpenAI or Gemini (LLM_PROVIDER).
+LLM layer (LangChain). Chat provider is switchable: Gemini, OpenAI or local Ollama e.g. Qwen (LLM_PROVIDER).
 
 Embeddings (EMBEDDING_PROVIDER):
   ollama → local nomic-embed-text; vectors live in `knowledgeembeddings_nomic`
@@ -18,12 +18,14 @@ from .config import (
     EMBEDDING_PROVIDER,
     GEMINI_API_KEY, GEMINI_MODEL, LLM_PROVIDER,
     OLLAMA_BASE_URL,
+    OLLAMA_CHAT_MODEL,
     OLLAMA_EMBED_MODEL,
     OPENAI_API_KEY,
     OPENAI_MODEL,
 )
 
 MOCK_RESPONSES = {
+    "general": "Good question. Here's what I found in the knowledge base — in a real run the answer is grounded in the retrieved documents.",
     "therapist": "I hear you, and what you're sharing sounds really significant. Can you tell me more about when these feelings tend to be strongest?",
     "health": "Thank you for sharing that. Could you tell me how long you've been experiencing this, and rate the discomfort from 1 to 10?",
     "career": "That's a goal worth pursuing with real strategy. What's your current role and what does your ideal position look like in 2 to 3 years?",
@@ -43,6 +45,15 @@ def get_chat_model(max_tokens: int = 500, temperature: float = 0.75) -> BaseChat
             temperature=temperature,
             # Thinking tokens count against max_output_tokens and add latency; not needed for voice chat.
             thinking_budget=0,
+        )
+    if LLM_PROVIDER == "ollama":
+        from langchain_ollama import ChatOllama
+
+        return ChatOllama(
+            model=OLLAMA_CHAT_MODEL,
+            base_url=OLLAMA_BASE_URL,
+            num_predict=max_tokens,
+            temperature=temperature,
         )
     from langchain_openai import ChatOpenAI
 

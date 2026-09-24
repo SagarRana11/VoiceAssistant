@@ -12,7 +12,7 @@ export type ConversationSummary = Omit<Conversation, "messages"> & {
   messageCount: number;
   lastMessage: ChatMessage | null;
 };
-export type RoleId = "therapist" | "health" | "career" | "fitness";
+export type RoleId = "general" | "therapist" | "health" | "career" | "fitness";
 
 const TOKEN_KEY = "va_token";
 

@@ -189,7 +189,7 @@ async def send_message(body: SendMessageBody, user: User = Depends(current_user)
             history.append({"role": "user", "content": text})
 
             rag_context = await get_rag_context(role_id, message, history[-4:])
-            role = ROLES.get(role_id, ROLES["therapist"])
+            role = ROLES.get(role_id, ROLES["general"])
             openai_messages = [{"role": "system", "content": role["systemPrompt"] + rag_context}, *history[-8:]]
 
             full = ""

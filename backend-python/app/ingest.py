@@ -4,7 +4,7 @@ Called automatically by rag._ensure_synced on first use of a domain; the CLI is 
 (e.g. to pre-warm).
 
 Source: the actual knowledge files in backend/src/rag/knowledgeSources/
-(<domain>Knowledge.ts + PDFs), read by app/sources.py.
+(<domain>Knowledge.ts + PDFs), plus backend-python/knowledge/ for the `general` domain, read by app/sources.py.
 
 Doc text (title/content/tags) is embedded with nomic-embed-text via Ollama. Docs are re-embedded only when their content
 hash changes; docs removed from the source are removed here too.
@@ -23,7 +23,7 @@ from .config import EMBEDDING_PROVIDER, OLLAMA_EMBED_MODEL
 from .db import KnowledgeEmbedding as KE, Session, now
 from .sources import load_domain_docs
 
-DOMAINS = ["exercise", "diet", "meditation"]
+DOMAINS = ["exercise", "diet", "meditation", "general"]
 BATCH = 16
 
 

@@ -1,7 +1,8 @@
 """
 RAG pipeline for chat — port of chatController.getRagContext.
 
-Knowledge docs (domains: exercise / diet / meditation). With
+Knowledge docs (domains: exercise / diet / meditation / general). The `general` role (no role selected)
+searches every domain by the query itself. With
 EMBEDDING_PROVIDER=ollama they are read from the source files
 (backend/src/rag/knowledgeSources, see app/sources.py) and embedded by nomic-embed-text into `knowledgeembeddings_nomic`
 (computed on first use per domain and stored; later loads reuse them).
@@ -12,9 +13,9 @@ from langchain_core.documents import Document
 from sqlalchemy import select
 
 from . import llm
-from .config import COHERE_API_KEY
+from .config import COHERE_API_KEY, RAG_MAX_DISTANCE, RAG_RELATIVE_MARGIN
 from .db import KnowledgeEmbedding as KE, Session
-from .ingest import sync_domain
+from .ingest import DOMAINS, sync_domain
 
 _synced: set[str] = set()
 
@@ -47,6 +48,26 @@ async def similarity_search(domain: str, query: str, top_k: int) -> list[dict]:
             select(KE).where(KE.domain == domain).order_by(KE.embedding.cosine_distance(q)).limit(top_k)
         )
         return [_row(e) for e in rows]
+
+
+async def search_all_domains(query: str, top_k: int) -> list[dict]:
+    """Semantic search over every domain — used when no role picks the domain for us."""
+    for domain in DOMAINS:
+        await _ensure_synced(domain)
+    try:
+        q = await llm.embed(query)
+    except Exception as err:
+        print(f"[RAG] embedding failed, skipping semantic search: {err}")
+        return []
+    dist = KE.embedding.cosine_distance(q)
+    async with Session() as s:
+        rows = (
+            await s.execute(select(KE, dist).where(dist <= RAG_MAX_DISTANCE).order_by(dist).limit(top_k))
+        ).all()
+    if rows:
+        rows = [(e, d) for e, d in rows if d <= rows[0][1] + RAG_RELATIVE_MARGIN]
+    print(f"[RAG:general] {len(rows)} chunks kept: " + ", ".join(f"{e.doc_id}={d:.3f}" for e, d in rows[:5]))
+    return [_row(e) for e, _ in rows]
 
 
 async def search_by_tags(domain: str, tags: list[str], top_k: int) -> list[dict]:
@@ -84,6 +105,9 @@ async def _tags_plus_semantic(domain: str, tags: list[str], query: str, top_k: i
 
 # ─── Query rewriter (queryRewriter.ts) ────────────────────────────────────────
 _REWRITE_PROMPTS = {
+    "general": """Rewrite the user message as a standalone search query of 6–12 lowercase keywords for a document vector search.
+Resolve pronouns and follow-ups using the conversation. Keep names, places, laws, articles and key terms. No punctuation.
+Example: "what are my fundamental duties in india" → fundamental duties citizens india constitution article 51a""",
     "fitness": """Rewrite the user message as 6–10 space-separated lowercase keywords for a fitness vector search.
 No sentences, no punctuation. Focus on: exercise types, muscle groups, goals, training variables, recovery.
 Example: "tired and can't lose weight" → fatigue energy weight loss calorie deficit cardio resistance training recovery""",
@@ -144,6 +168,12 @@ async def rerank(query: str, docs: list[str], top_k: int) -> list[str]:
 # ─── Entry point ──────────────────────────────────────────────────────────────
 async def get_rag_context(role_id: str, message: str, history: list[dict]) -> str:
     try:
+        if role_id == "general":
+            # No role → the query itself decides which docs are relevant, across all domains.
+            query = await rewrite_query(message, "general", history)
+            candidates = [_fmt(d) for d in await search_all_domains(query, 15)]
+            docs = await rerank(message, candidates, 5)
+            return "\n\n=== RELEVANT KNOWLEDGE ===\n" + "\n\n".join(docs) if docs else ""
         if role_id == "fitness":
             query = await rewrite_query(message, "fitness", history)
             candidates = [_fmt(d) for d in await similarity_search("exercise", query, 15)]

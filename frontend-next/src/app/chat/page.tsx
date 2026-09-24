@@ -44,15 +44,18 @@ export default function ChatPage() {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [active?.messages]);
 
+  async function createConversation(roleId: RoleId) {
+    const d = await api<{ conversation: Conversation }>("/chat/conversations", {
+      method: "POST",
+      body: JSON.stringify({ roleId, roleName: roleById(roleId).name }),
+    });
+    return d.conversation;
+  }
+
   async function startConversation(roleId: RoleId) {
     setError("");
     try {
-      const role = roleById(roleId);
-      const d = await api<{ conversation: Conversation }>("/chat/conversations", {
-        method: "POST",
-        body: JSON.stringify({ roleId, roleName: role.name }),
-      });
-      setActive(d.conversation);
+      setActive(await createConversation(roleId));
       setRailOpen(false);
       await refreshList();
     } catch (e) {
@@ -84,16 +87,30 @@ export default function ChatPage() {
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || !active || streaming) return;
+    if (!text || streaming) return;
     setDraft("");
     setError("");
     setStreaming(true);
+    // No role picked yet → start a General (no-role) conversation; RAG is chosen from the query.
+    let conv = active;
+    if (!conv) {
+      try {
+        conv = await createConversation("general");
+        setActive(conv);
+      } catch (err) {
+        setError((err as Error).message);
+        setDraft(text);
+        setStreaming(false);
+        return;
+      }
+    }
+    const target = conv;
     const now = new Date().toISOString();
     const userMsg: ChatMessage = { _id: `u-${now}`, role: "user", content: text, timestamp: now };
     const botMsg: ChatMessage = { _id: `a-${now}`, role: "assistant", content: "", timestamp: now };
     setActive((c) => c && { ...c, messages: [...c.messages, userMsg, botMsg] });
     try {
-      await streamMessage({ conversationId: active._id, message: text, roleId: active.roleId }, (chunk) =>
+      await streamMessage({ conversationId: target._id, message: text, roleId: target.roleId }, (chunk) =>
         setActive((c) => {
           if (!c) return c;
           const msgs = c.messages.slice();
@@ -216,7 +233,10 @@ export default function ChatPage() {
               <p className="font-display text-3xl leading-tight font-semibold">
                 Hi {user.name.split(" ")[0]}, who do you want to talk to?
               </p>
-              <p className="mt-3 text-ink-soft">Pick a coach on the left to start, or reopen a recent conversation.</p>
+              <p className="mt-3 text-ink-soft">
+                Pick a coach on the left, or just type a question below — with no role, answers come from the knowledge
+                docs that match your question.
+              </p>
             </div>
           ) : active.messages.length === 0 ? (
             <p className="mx-auto mt-16 max-w-md text-ink-soft">
@@ -260,14 +280,13 @@ export default function ChatPage() {
                 }
               }}
               rows={1}
-              disabled={!active}
-              placeholder={active ? "Type a message" : "Pick a coach to start"}
+              placeholder={active ? "Type a message" : "Ask anything, or pick a coach"}
               aria-label="Message"
               className="max-h-40 flex-1 resize-none rounded-xl border border-line bg-mist px-4 py-2.5 outline-none focus:border-hue disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={!active || streaming || !draft.trim()}
+              disabled={streaming || !draft.trim()}
               className="rounded-xl bg-hue px-5 py-2.5 font-medium text-white disabled:opacity-40"
             >
               {streaming ? "Replying…" : "Send"}

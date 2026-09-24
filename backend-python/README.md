@@ -30,12 +30,15 @@ Needs Ollama running with `nomic-embed-text` for RAG embeddings (default provide
 | `JWT_EXPIRES_DAYS` | `7` | |
 | `CLIENT_URL` | `http://localhost:3000` | CORS origin (Next.js dev) |
 | `PY_PORT` | `5002` | |
-| `LLM_PROVIDER` | `gemini` | `gemini` \| `openai` \| `mock` (falls back to mock if key missing) |
+| `LLM_PROVIDER` | `gemini` | `gemini` \| `openai` \| `ollama` (local, no key) \| `mock` (falls back to mock if gemini/openai key missing) |
+| `OLLAMA_CHAT_MODEL` | `qwen2.5:7b` | Chat model when `LLM_PROVIDER=ollama` (`ollama pull qwen2.5:7b`) |
 | `GEMINI_API_KEY` / `OPENAI_API_KEY` | — | |
 | `GEMINI_MODEL` / `OPENAI_MODEL` | `gemini-3.5-flash` / `gpt-4o-mini` | |
 | `EMBEDDING_PROVIDER` | `ollama` | `ollama` (nomic, 768-dim) \| `openai` (text-embedding-3-small, 1536-dim). Column size follows it — switching needs `knowledge_embeddings` dropped & re-ingested |
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | |
 | `COHERE_API_KEY` | — | empty → no rerank |
+| `RAG_MAX_DISTANCE` | `0.45` | General role: max cosine distance for a chunk to count as relevant |
+| `RAG_RELATIVE_MARGIN` | `0.15` | General role: also drop chunks this much worse than the best hit |
 
 ## Database (Postgres, SQLAlchemy async, `app/db.py`)
 | Table | Columns |
@@ -71,10 +74,11 @@ Errors are always `{ "message": "..." }`. Bodies are Pydantic models (`app/schem
 | `app/auth.py` | bcrypt hash/check, JWT sign, `current_user` dependency |
 | `app/db.py` | Async engine/session, ORM models, `init_db` (vector extension + tables) |
 | `app/config.py` | Env config |
-| `app/llm.py` | LangChain chat models (Gemini / OpenAI / mock), streaming, embeddings |
+| `app/llm.py` | LangChain chat models (Gemini / OpenAI / Ollama-Qwen / mock), streaming, embeddings |
 | `app/rag.py` | Query rewrite → pgvector cosine search / tag overlap → Cohere rerank |
 | `app/ingest.py` | Source docs → embeddings → upsert into `knowledge_embeddings` (hash-skip, stale delete) |
-| `app/sources.py` | Parses knowledge source files (TS arrays + PDFs) into docs |
+| `app/sources.py` | Parses knowledge source files (TS arrays + PDFs) into docs; chunks `knowledge/` files for `general` |
+| `knowledge/` | Drop any `.pdf` / `.md` / `.txt` here → `general` domain (~1200-char chunks, 200 overlap). Sample: Constitution of India Art. 51A |
 | `app/roles.json` | Role system prompts |
 
 ## Chat flow
@@ -82,6 +86,9 @@ Errors are always `{ "message": "..." }`. Bodies are Pydantic models (`app/schem
 2. RAG (`rag.get_rag_context`):
    - **fitness**: rewrite query → top 15 by `embedding <=> q` over `exercise` → Cohere rerank to 5.
    - **health**: tag overlap (`tags && …`) + 2 semantic extras over `diet` and `meditation`.
+   - **general** (no role): rewrite query to standalone keywords → top 15 by cosine over **all** domains
+     (exercise, diet, meditation, general) filtered by `RAG_MAX_DISTANCE` + `RAG_RELATIVE_MARGIN` → Cohere rerank to 5.
+     Nothing relevant → no context, LLM answers from general knowledge.
    - therapist / career: no RAG.
    - First use of a domain per process runs `ingest.sync_domain` (embeds new/changed docs only).
 3. System prompt = role prompt + RAG context + last 8 messages → LLM stream → SSE chunks.
@@ -92,4 +99,11 @@ Errors are always `{ "message": "..." }`. Bodies are Pydantic models (`app/schem
 (409/401 paths), conversation CRUD, SSE streaming, ingest (exercise 18, diet 10, meditation 10), fitness + health RAG.
 Existing Mongo users/conversations were not migrated — users register again.
 
-Next: `general` role with query-routed RAG (classifier picks domain/tags from the message).
+2026-09-24: `general` (no-role) role added — query-routed RAG across all domains + `knowledge/` folder.
+Verified: "what are my fundamental duties in India" → only the 2 Constitution chunks retrieved, answer lists all 11
+duties of Art. 51A; "how do I build muscle" → exercise + diet docs; "capital of peru" → no context. Frontend-next:
+General Assistant listed first, and typing with no conversation open auto-starts a General conversation.
+
+2026-09-24: `LLM_PROVIDER=ollama` added (ChatOllama, default `qwen2.5:7b`) — chat + query rewriter fully local.
+Verified: general-role Art. 51A question answered from the Constitution chunks (~47s incl. cold model load);
+fitness chat streams (~31s). Slower and a bit less complete than Gemini (listed 10 of 11 duties).

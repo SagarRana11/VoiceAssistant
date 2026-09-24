@@ -4,6 +4,9 @@ backend/src/rag/knowledgeSources/ — no dependency on the Node backend having r
 
 - <domain>Knowledge.ts : hardcoded KnowledgeDoc arrays (id/category/title/content/tags)
 - *.pdf                : split on top-level "N. Title" headings (same as pdfLoader.ts)
+
+The `general` domain (used by the no-role assistant) instead reads every .pdf/.md/.txt dropped into
+backend-python/knowledge/ and splits it into overlapping ~1200-char chunks.
 """
 import re
 from pathlib import Path
@@ -11,6 +14,8 @@ from pathlib import Path
 from pypdf import PdfReader
 
 SOURCES_DIR = Path(__file__).resolve().parents[2] / "backend" / "src" / "rag" / "knowledgeSources"
+GENERAL_DIR = Path(__file__).resolve().parents[1] / "knowledge"
+CHUNK_CHARS, CHUNK_OVERLAP = 1200, 200
 
 # PDFs per domain — keep in sync with vectorStore.ts
 PDF_FILES: dict[str, list[str]] = {
@@ -68,7 +73,62 @@ def _load_pdf(file_name: str, prefix: str) -> list[dict]:
     return docs
 
 
+def _chunk(text: str) -> list[str]:
+    """Paragraph-aware chunks of ~CHUNK_CHARS with CHUNK_OVERLAP chars carried over."""
+    text = re.sub(r"[ \t]+", " ", text)
+    paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    chunks, cur = [], ""
+    for p in paras:
+        while len(p) > CHUNK_CHARS:  # oversized paragraph (common in PDF text) → hard split
+            head, p = p[:CHUNK_CHARS], p[CHUNK_CHARS - CHUNK_OVERLAP :]
+            if cur:
+                chunks.append(cur)
+                cur = ""
+            chunks.append(head)
+        if cur and len(cur) + len(p) + 2 > CHUNK_CHARS:
+            chunks.append(cur)
+            cur = cur[-CHUNK_OVERLAP:] + "\n\n" + p
+        else:
+            cur = f"{cur}\n\n{p}" if cur else p
+    if cur:
+        chunks.append(cur)
+    return chunks
+
+
+def _load_general() -> list[dict]:
+    if not GENERAL_DIR.exists():
+        return []
+    docs = []
+    for path in sorted(GENERAL_DIR.iterdir()):
+        ext = path.suffix.lower()
+        try:
+            if ext == ".pdf":
+                text = "\n\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
+            elif ext in (".md", ".txt"):
+                text = path.read_text(encoding="utf-8")
+            else:
+                continue
+        except Exception as e:
+            print(f"[Sources] failed to load {path.name}: {e}")
+            continue
+        title = path.stem.replace("_", " ").replace("-", " ")
+        slug = re.sub(r"[^a-z0-9]+", "_", path.stem.lower()).strip("_")
+        chunks = _chunk(text)
+        for i, chunk in enumerate(chunks):
+            docs.append({
+                "docId": f"general_{slug}_{i + 1:04d}",
+                "category": "general",
+                "title": f"{title} (part {i + 1})",
+                "content": chunk,
+                "tags": [],
+            })
+        print(f"[Sources] {len(chunks)} chunks from {path.name}")
+    return docs
+
+
 def load_domain_docs(domain: str) -> list[dict]:
+    if domain == "general":
+        return _load_general()
     docs = _load_ts(domain)
     for f in PDF_FILES.get(domain, []):
         try:
