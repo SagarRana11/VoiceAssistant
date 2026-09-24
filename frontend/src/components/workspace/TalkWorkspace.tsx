@@ -4,6 +4,7 @@ import { ROLES } from '../../constants/roles';
 import { Avatar } from '../Avatar/Avatar';
 import { MicButton } from '../MicButton/MicButton';
 import { SoundWave } from '../SoundWave/SoundWave';
+import { Transcript } from '../Transcript/Transcript';
 import { useAssistantContext } from '../../context/AssistantContext';
 import styles from './TalkWorkspace.module.css';
 
@@ -15,9 +16,10 @@ const PROVIDERS: { id: AvatarProvider; label: string }[] = [
 ];
 
 export function TalkWorkspace() {
-  const { assistantState, currentRole, avatarProvider, setAvatarProvider } = useAppStore();
+  const { assistantState, currentRole, avatarProvider, setAvatarProvider, messages } = useAppStore();
   const {
     interimTranscript,
+    streamingResponse,
     conversationState,
     isListening,
     isSpeaking,
@@ -147,6 +149,18 @@ export function TalkWorkspace() {
       )}
 
       <p className={styles.roleTone}>{role.tone}</p>
+
+      {/* Chat transcript */}
+      {(messages.length > 0 || streamingResponse) && (
+        <div className={styles.chat}>
+          <Transcript
+            messages={messages}
+            streamingResponse={streamingResponse}
+            interimTranscript=""
+            roleColor={role.color}
+          />
+        </div>
+      )}
     </div>
   );
 }

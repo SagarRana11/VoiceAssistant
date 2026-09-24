@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1360" width="1200" height="1360" role="img" aria-label="High-level design of a retrieval-augmented generation system: knowledge documents are chunked, tagged, embedded and cached into a vector store; a patient question is classified and rewritten, retrieved against the store by tag match with a vector-search fallback, and the top three documents are assembled into a prompt for the language model, whose streamed answer feeds back into conversation history.">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6675"/>
+    </marker>
+    <marker id="aI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B4BC4"/>
+    </marker>
+    <marker id="aQ" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0E7C6B"/>
+    </marker>
+    <marker id="aF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B3600A"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="1360" fill="#FFFFFF"/>
+
+  <!-- Header -->
+  <text x="60" y="62" font-family="Helvetica,Arial,sans-serif" font-size="33" font-weight="700" fill="#10151F">How Retrieval-Augmented Generation actually works</text>
+  <text x="60" y="94" font-family="Helvetica,Arial,sans-serif" font-size="16.5" fill="#5B6675">High-level design &#8212; the model only answers after the right documents are found and handed to it</text>
+  <line x1="60" y1="120" x2="1140" y2="120" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= INDEX ================= -->
+  <text x="60" y="158" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#5B4BC4" letter-spacing="2.4">PHASE 1 &#8212; BUILD THE INDEX (done ahead of time)</text>
+
+  <rect x="60" y="178" width="224" height="92" rx="10" fill="#FFFFFF" stroke="#5B4BC4" stroke-width="1.6"/>
+  <text x="172" y="216" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Knowledge Base</text>
+  <text x="172" y="240" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">approved source</text>
+  <text x="172" y="257" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">documents</text>
+
+  <line x1="284" y1="224" x2="326" y2="224" stroke="#5B6675" stroke-width="1.7" marker-end="url(#a)"/>
+
+  <rect x="332" y="178" width="224" height="92" rx="10" fill="#FFFFFF" stroke="#C9D2DE" stroke-width="1.6"/>
+  <text x="444" y="216" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Chunk &amp; Tag</text>
+  <text x="444" y="240" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">split into sections,</text>
+  <text x="444" y="257" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">label each by topic</text>
+
+  <line x1="556" y1="224" x2="598" y2="224" stroke="#5B6675" stroke-width="1.7" marker-end="url(#a)"/>
+
+  <rect x="604" y="178" width="224" height="92" rx="10" fill="#FFFFFF" stroke="#C9D2DE" stroke-width="1.6"/>
+  <text x="716" y="216" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Embedding Model</text>
+  <text x="716" y="240" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">turns text into a list</text>
+  <text x="716" y="257" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">of numbers (a vector)</text>
+
+  <line x1="828" y1="224" x2="870" y2="224" stroke="#5B6675" stroke-width="1.7" marker-end="url(#a)"/>
+
+  <rect x="876" y="178" width="224" height="92" rx="10" fill="#FFFFFF" stroke="#5B4BC4" stroke-width="1.6"/>
+  <text x="988" y="216" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Vector Store</text>
+  <text x="988" y="240" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">every chunk, searchable</text>
+  <text x="988" y="257" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">by meaning or by tag</text>
+
+  <!-- cache -->
+  <rect x="604" y="322" width="496" height="72" rx="10" fill="#F5F4FC" stroke="#5B4BC4" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="626" y="350" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Embedding Cache (database)</text>
+  <text x="626" y="374" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">vectors survive restarts &#8212; edit one document, only that one is re-embedded</text>
+
+  <path d="M 690 270 L 690 318" stroke="#5B4BC4" stroke-width="1.6" fill="none" marker-end="url(#aI)"/>
+  <text x="700" y="299" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B4BC4">save</text>
+  <path d="M 1040 318 L 1040 274" stroke="#5B4BC4" stroke-width="1.6" fill="none" marker-end="url(#aI)"/>
+  <text x="1050" y="299" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B4BC4">reuse</text>
+
+  <line x1="60" y1="436" x2="1140" y2="436" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= QUERY ================= -->
+  <text x="60" y="474" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#0E7C6B" letter-spacing="2.4">PHASE 2 &#8212; ANSWER A QUESTION (every request)</text>
+
+  <rect x="440" y="494" width="320" height="64" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="600" y="524" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#10151F">Patient asks a question</text>
+  <text x="600" y="545" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">in plain, conversational language</text>
+
+  <path d="M 600 558 L 600 574 L 400 574 L 400 592" stroke="#0E7C6B" stroke-width="1.7" fill="none" marker-end="url(#aQ)"/>
+  <path d="M 600 558 L 600 574 L 800 574 L 800 592" stroke="#0E7C6B" stroke-width="1.7" fill="none" marker-end="url(#aQ)"/>
+
+  <rect x="250" y="596" width="300" height="86" rx="10" fill="#FFFFFF" stroke="#C9D2DE" stroke-width="1.6"/>
+  <text x="400" y="626" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Understand the intent</text>
+  <text x="400" y="649" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">which topic is this about &#8212;</text>
+  <text x="400" y="666" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">so only that shelf is searched</text>
+
+  <rect x="650" y="596" width="300" height="86" rx="10" fill="#FFFFFF" stroke="#C9D2DE" stroke-width="1.6"/>
+  <text x="800" y="626" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Rewrite for search</text>
+  <text x="800" y="649" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">chatty phrasing becomes</text>
+  <text x="800" y="666" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">precise search terms</text>
+
+  <path d="M 400 682 L 400 700 L 600 700" stroke="#0E7C6B" stroke-width="1.7" fill="none"/>
+  <path d="M 800 682 L 800 700 L 600 700" stroke="#0E7C6B" stroke-width="1.7" fill="none"/>
+  <path d="M 600 700 L 400 700 L 400 736" stroke="#0E7C6B" stroke-width="1.7" fill="none" marker-end="url(#aQ)"/>
+
+  <!-- retrieval panel -->
+  <rect x="180" y="712" width="840" height="240" rx="12" fill="#F6F8FA" stroke="#0E7C6B" stroke-width="1.5"/>
+  <text x="200" y="736" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#0E7C6B" letter-spacing="1.8">RETRIEVAL</text>
+
+  <rect x="200" y="748" width="400" height="76" rx="9" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="220" y="776" font-family="Helvetica,Arial,sans-serif" font-size="15.5" font-weight="700" fill="#10151F">Tag match &#8212; tried first</text>
+  <text x="220" y="798" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">exact filter on topic and on this patient&#8217;s own condition</text>
+  <text x="220" y="815" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">cheap, precise, no vector maths needed</text>
+
+  <rect x="200" y="856" width="400" height="76" rx="9" fill="#FFFDF7" stroke="#B3600A" stroke-width="1.6"/>
+  <text x="220" y="884" font-family="Helvetica,Arial,sans-serif" font-size="15.5" font-weight="700" fill="#10151F">Vector search &#8212; the fallback</text>
+  <text x="220" y="906" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">question becomes a vector, compared against the store</text>
+  <text x="220" y="923" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">closest meaning wins, even with different wording</text>
+
+  <path d="M 400 824 L 400 852" stroke="#B3600A" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#aF)"/>
+  <text x="412" y="844" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#B3600A">too few matches</text>
+
+  <rect x="686" y="790" width="300" height="80" rx="9" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="836" y="822" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Best 3 documents</text>
+  <text x="836" y="845" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">deduplicated, topic-checked</text>
+
+  <path d="M 600 786 L 643 786 L 643 812 L 682 812" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#aQ)"/>
+  <path d="M 600 894 L 643 894 L 643 848 L 682 848" stroke="#B3600A" stroke-width="1.6" fill="none" marker-end="url(#aF)"/>
+
+  <!-- vector store feeds retrieval -->
+  <path d="M 1100 224 L 1152 224 L 1152 732 L 1024 732" stroke="#5B4BC4" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#aI)"/>
+  <text x="1145" y="756" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B4BC4">index read here</text>
+
+  <!-- out of panel -->
+  <path d="M 836 870 L 836 970 L 600 970 L 600 990" stroke="#0E7C6B" stroke-width="1.7" fill="none" marker-end="url(#aQ)"/>
+
+  <rect x="300" y="994" width="600" height="96" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="600" y="1024" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#10151F">Build the prompt</text>
+  <text x="600" y="1049" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">who the patient is &#183; the 3 retrieved documents &#183; safety rules &#183; recent turns</text>
+  <text x="600" y="1072" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">the retrieved text is the source of truth, not the model&#8217;s memory</text>
+
+  <line x1="600" y1="1090" x2="600" y2="1120" stroke="#0E7C6B" stroke-width="1.7" marker-end="url(#aQ)"/>
+
+  <rect x="440" y="1124" width="320" height="64" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="600" y="1154" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#10151F">Language model</text>
+  <text x="600" y="1175" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">explains, in the patient&#8217;s words</text>
+
+  <line x1="600" y1="1188" x2="600" y2="1218" stroke="#0E7C6B" stroke-width="1.7" marker-end="url(#aQ)"/>
+
+  <rect x="420" y="1222" width="360" height="64" rx="10" fill="#F2F8F7" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="600" y="1252" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#10151F">Answer, streamed live</text>
+  <text x="600" y="1273" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">grounded in documents a clinician approved</text>
+
+  <!-- history loop -->
+  <rect x="880" y="1124" width="240" height="64" rx="10" fill="#F6F8FA" stroke="#5B6675" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="1000" y="1152" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Conversation history</text>
+  <text x="1000" y="1173" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">what was already said</text>
+
+  <path d="M 780 1254 L 1000 1254 L 1000 1192" stroke="#5B6675" stroke-width="1.4" fill="none" stroke-dasharray="6 4" marker-end="url(#a)"/>
+  <path d="M 1120 1148 L 1172 1148 L 1172 630 L 954 630" stroke="#5B6675" stroke-width="1.4" fill="none" stroke-dasharray="6 4" marker-end="url(#a)"/>
+  <text x="1148" y="610" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">resolves &#8220;it&#8221;, &#8220;that one&#8221;</text>
+
+  <!-- legend -->
+  <line x1="60" y1="1312" x2="1140" y2="1312" stroke="#C9D2DE" stroke-width="1"/>
+  <rect x="60" y="1330" width="28" height="3.5" rx="1.75" fill="#0E7C6B"/>
+  <text x="98" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">main path</text>
+  <rect x="220" y="1330" width="28" height="3.5" rx="1.75" fill="#B3600A"/>
+  <text x="258" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">fallback path</text>
+  <rect x="400" y="1330" width="28" height="3.5" rx="1.75" fill="#5B4BC4"/>
+  <text x="438" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">index &amp; storage</text>
+  <text x="600" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">dashed = conditional or stored state</text>
+</svg>

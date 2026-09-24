@@ -45,6 +45,16 @@ class InMemoryVectorStore {
     return this.initPromise;
   }
 
+  /** True once initialize() has completed. */
+  get isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /** Number of indexed documents. */
+  get size(): number {
+    return this.entries.length;
+  }
+
   async similaritySearch(query: string, topK = 3): Promise<KnowledgeDoc[]> {
     await this.initialize();
     const queryEmbedding = await getEmbedding(query);

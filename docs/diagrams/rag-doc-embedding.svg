@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1390" width="1200" height="1390" role="img" aria-label="How documents become embeddings: source files are split into chunks and tagged, each chunk is fingerprinted with a hash and compared against the database so unchanged chunks reuse their stored vector while new or edited ones are sent to the embeddings API, and the resulting 1536-number vectors are saved and loaded into memory, so a restart embeds nothing.">
+  <defs>
+    <marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6675"/>
+    </marker>
+    <marker id="mT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0E7C6B"/>
+    </marker>
+    <marker id="mA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B3600A"/>
+    </marker>
+    <marker id="mG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#A3AFBF"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="1390" fill="#FFFFFF"/>
+
+  <text x="60" y="62" font-family="Helvetica,Arial,sans-serif" font-size="33" font-weight="700" fill="#10151F">How a document becomes an embedding</text>
+  <text x="60" y="94" font-family="Helvetica,Arial,sans-serif" font-size="16.5" fill="#5B6675">Split, tag, fingerprint, embed, cache &#8212; the work is done once and almost never repeated</text>
+  <line x1="60" y1="118" x2="1140" y2="118" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- BAND 1 -->
+  <text x="60" y="154" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">STEP 1 &#8212; SPLIT AND LABEL</text>
+
+  <rect x="60" y="172" width="250" height="72" rx="10" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="80" y="200" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Markdown files</text>
+  <text x="80" y="224" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">grouped in topic folders</text>
+
+  <rect x="60" y="258" width="250" height="72" rx="10" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="80" y="286" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">PDF handbook</text>
+  <text x="80" y="310" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">one long document</text>
+
+  <path d="M 310 208 L 332 208 L 332 251 L 348 251" stroke="#5B6675" stroke-width="1.6" fill="none" marker-end="url(#m)"/>
+  <path d="M 310 294 L 332 294 L 332 251" stroke="#5B6675" stroke-width="1.6" fill="none"/>
+
+  <rect x="356" y="178" width="254" height="146" rx="10" fill="#F6F8FA" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="376" y="206" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Split into chunks</text>
+  <text x="376" y="234" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">markdown &#8594; one chunk per file</text>
+  <text x="376" y="258" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">PDF &#8594; one chunk per heading</text>
+  <text x="376" y="282" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">empty sections discarded</text>
+  <text x="376" y="308" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#B3600A">a chunk is the unit that gets retrieved</text>
+
+  <line x1="610" y1="251" x2="648" y2="251" stroke="#5B6675" stroke-width="1.6" marker-end="url(#m)"/>
+
+  <rect x="656" y="178" width="484" height="158" rx="10" fill="#FFFFFF" stroke="#1D6FA5" stroke-width="1.6"/>
+  <text x="676" y="204" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#1D6FA5">One chunk record</text>
+  <text x="676" y="230" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">id</text>
+  <text x="756" y="230" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">procedure_pdf_003</text>
+  <text x="676" y="252" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">topic</text>
+  <text x="756" y="252" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">procedure</text>
+  <text x="676" y="274" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">title</text>
+  <text x="756" y="274" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">Angioplasty and stents</text>
+  <text x="676" y="296" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">text</text>
+  <text x="756" y="296" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">the section body, verbatim</text>
+  <text x="676" y="318" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">tags</text>
+  <text x="756" y="318" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#1D6FA5">procedure, stent, angioplasty</text>
+  <text x="1000" y="318" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#5B6675">&#8592; from the title</text>
+
+  <line x1="60" y1="352" x2="1140" y2="352" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- BAND 2 -->
+  <text x="60" y="386" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">STEP 2 &#8212; DECIDE WHETHER THIS CHUNK NEEDS EMBEDDING AT ALL</text>
+
+  <rect x="60" y="406" width="290" height="92" rx="10" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="80" y="434" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Fingerprint the chunk</text>
+  <text x="80" y="458" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">hash of title &#43; text</text>
+  <text x="80" y="480" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">one character changes, hash changes</text>
+
+  <line x1="350" y1="452" x2="392" y2="452" stroke="#5B6675" stroke-width="1.6" marker-end="url(#m)"/>
+
+  <rect x="398" y="406" width="290" height="92" rx="10" fill="#F6F8FA" stroke="#5B4BC4" stroke-width="1.6"/>
+  <text x="418" y="434" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Compare with the database</text>
+  <text x="418" y="458" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">stored fingerprint for this chunk id</text>
+  <text x="418" y="480" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">three possible outcomes</text>
+
+  <path d="M 688 452 L 709 452 L 709 424 L 726 424" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#mT)"/>
+  <path d="M 688 452 L 709 452 L 709 512 L 726 512" stroke="#B3600A" stroke-width="1.6" fill="none" marker-end="url(#mA)"/>
+  <path d="M 688 452 L 709 452 L 709 600 L 726 600" stroke="#A3AFBF" stroke-width="1.6" fill="none" marker-end="url(#mG)"/>
+
+  <rect x="730" y="388" width="410" height="72" rx="10" fill="#F2F8F7" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="750" y="414" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Same fingerprint &#8594; reuse the stored vector</text>
+  <text x="750" y="440" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#0E7C6B">no API call, no cost, no waiting</text>
+
+  <rect x="730" y="476" width="410" height="72" rx="10" fill="#FFFDF7" stroke="#B3600A" stroke-width="1.6"/>
+  <text x="750" y="502" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">New or edited &#8594; embed it now</text>
+  <text x="750" y="528" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#B3600A">the only case that costs anything</text>
+
+  <rect x="730" y="564" width="410" height="72" rx="10" fill="#F6F8FA" stroke="#A3AFBF" stroke-width="1.6"/>
+  <text x="750" y="590" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Chunk deleted &#8594; drop its stored vector</text>
+  <text x="750" y="616" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">keeps the store honest as content is removed</text>
+
+  <line x1="60" y1="666" x2="1140" y2="666" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- BAND 3 -->
+  <text x="60" y="700" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">STEP 3 &#8212; TURN THE TEXT INTO NUMBERS</text>
+
+  <rect x="60" y="720" width="420" height="150" rx="10" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="80" y="746" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">What is actually sent</text>
+  <text x="80" y="774" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#10151F">Angioplasty and stents</text>
+  <text x="80" y="796" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">A stent is a small mesh tube placed in the</text>
+  <text x="80" y="816" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">artery to hold it open after the blockage&#8230;</text>
+  <text x="80" y="844" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">title and body together &#8212; the heading carries meaning</text>
+  <text x="80" y="862" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">very long chunks are truncated before sending</text>
+
+  <line x1="480" y1="795" x2="516" y2="795" stroke="#5B6675" stroke-width="1.6" marker-end="url(#m)"/>
+
+  <rect x="522" y="732" width="250" height="126" rx="10" fill="#F7F6FD" stroke="#5B4BC4" stroke-width="1.8"/>
+  <circle cx="546" cy="757" r="6" fill="#5B4BC4"/>
+  <text x="562" y="763" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Embeddings API</text>
+  <text x="542" y="790" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">text-embedding-3-small</text>
+  <text x="542" y="812" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">one call per changed chunk</text>
+  <text x="542" y="840" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B4BC4">the only paid step in this diagram</text>
+
+  <line x1="772" y1="795" x2="808" y2="795" stroke="#5B6675" stroke-width="1.6" marker-end="url(#m)"/>
+
+  <rect x="814" y="720" width="326" height="150" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="830" y="748" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">A vector: 1536 numbers</text>
+  <text x="830" y="770" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">0.021 &#8722;0.114 0.087 &#8722;0.043 &#8230;</text>
+  <rect x="830.0" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.27"/>
+  <rect x="842.4" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.36"/>
+  <rect x="854.8" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.26"/>
+  <rect x="867.2" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.29"/>
+  <rect x="879.6" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.51"/>
+  <rect x="892.0" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.25"/>
+  <rect x="904.4" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.57"/>
+  <rect x="916.8" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.33"/>
+  <rect x="929.2" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.54"/>
+  <rect x="941.6" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.27"/>
+  <rect x="954.0" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.32"/>
+  <rect x="966.4" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.25"/>
+  <rect x="978.8" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.76"/>
+  <rect x="991.2" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.48"/>
+  <rect x="1003.6" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.36"/>
+  <rect x="1016.0" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.36"/>
+  <rect x="1028.4" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.77"/>
+  <rect x="1040.8" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.79"/>
+  <rect x="1053.2" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.49"/>
+  <rect x="1065.6" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.34"/>
+  <rect x="1078.0" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.29"/>
+  <rect x="1090.4" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.2"/>
+  <rect x="1102.8" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.36"/>
+  <rect x="1115.2" y="784" width="10.5" height="26" rx="2" fill="#0E7C6B" opacity="0.41"/>
+  <text x="830" y="832" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">the chunk&#8217;s position in meaning space &#8212;</text>
+  <text x="830" y="852" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">two chunks about stents land close together</text>
+
+  <line x1="60" y1="896" x2="1140" y2="896" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- BAND 4 -->
+  <text x="60" y="930" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">STEP 4 &#8212; STORE IT ONCE, USE IT FOREVER</text>
+
+  <rect x="60" y="950" width="470" height="120" rx="10" fill="#F7F6FD" stroke="#5B4BC4" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="80" y="978" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Saved to the database</text>
+  <text x="80" y="1004" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">chunk id &#183; topic &#183; title &#183; text &#183; tags</text>
+  <text x="80" y="1026" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">the vector, and the fingerprint it was built from</text>
+  <text x="80" y="1052" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B4BC4">the fingerprint is what makes the next boot free</text>
+
+  <line x1="530" y1="1010" x2="572" y2="1010" stroke="#5B6675" stroke-width="1.6" marker-end="url(#m)"/>
+
+  <rect x="578" y="950" width="562" height="120" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="598" y="978" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#10151F">Loaded into memory on first use</text>
+  <text x="598" y="1004" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">every chunk paired with its vector, held in the running process</text>
+  <text x="598" y="1026" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">built lazily on the first question, and only once even under concurrent requests</text>
+  <text x="598" y="1052" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#0E7C6B">from here on, searching is arithmetic in memory &#8212; no network call to find documents</text>
+
+  <line x1="60" y1="1096" x2="1140" y2="1096" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- BAND 5 -->
+  <text x="60" y="1130" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">WHAT A CHANGE COSTS &#8212; CHUNKS EMBEDDED, OUT OF 42</text>
+
+  <text x="60" y="1174" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#10151F">First build</text>
+  <rect x="300" y="1160" width="700" height="18" rx="9" fill="#F0F3F7"/>
+  <rect x="300" y="1160" width="700" height="18" rx="9" fill="#B3600A"/>
+  <text x="1016" y="1174" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F">42</text>
+
+  <text x="60" y="1214" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#10151F">Edit one document</text>
+  <rect x="300" y="1200" width="700" height="18" rx="9" fill="#F0F3F7"/>
+  <rect x="300" y="1200" width="17" height="18" rx="9" fill="#B3600A"/>
+  <text x="1016" y="1214" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F">1</text>
+
+  <text x="60" y="1254" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#10151F">Restart, nothing edited</text>
+  <rect x="300" y="1240" width="700" height="18" rx="9" fill="#F0F3F7"/>
+  <text x="1016" y="1254" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#0E7C6B">0</text>
+  <text x="1040" y="1254" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#0E7C6B">all reused</text>
+
+  <text x="60" y="1300" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">Embedding is treated as a build artefact, not a runtime step. Adding a document is cheap; restarting the service is free.</text>
+
+  <line x1="60" y1="1336" x2="1140" y2="1336" stroke="#D9E0E9" stroke-width="1"/>
+  <text x="60" y="1362" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">Retrieval side of this store: tag matching first, cosine similarity as the fallback.</text>
+</svg>

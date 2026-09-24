@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1430" width="1200" height="1430" role="img" aria-label="Retrieval internals: an OpenAI chat call rewrites the raw question into keywords, then the same store is searched two ways — exact tag matching with no API call, and semantic vector search using an embeddings call and cosine similarity — with vector search filling in whenever tag matching returns fewer than three documents, before a third OpenAI call streams the answer.">
+  <defs>
+    <marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6675"/>
+    </marker>
+    <marker id="mV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B4BC4"/>
+    </marker>
+    <marker id="mT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0E7C6B"/>
+    </marker>
+    <marker id="mB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B3600A"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="1430" fill="#FFFFFF"/>
+
+  <text x="60" y="62" font-family="Helvetica,Arial,sans-serif" font-size="33" font-weight="700" fill="#10151F">Inside retrieval: tags, vectors, and three API calls</text>
+  <text x="60" y="94" font-family="Helvetica,Arial,sans-serif" font-size="16.5" fill="#5B6675">Query optimization &#183; exact tag search &#183; semantic vector search &#183; where the model is actually called</text>
+  <line x1="60" y1="118" x2="1140" y2="118" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- STEP 1 : QUERY OPTIMIZATION -->
+  <text x="60" y="154" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#5B4BC4" letter-spacing="2.2">STEP 1 &#8212; QUERY OPTIMIZATION</text>
+
+  <rect x="60" y="174" width="290" height="92" rx="10" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.6"/>
+  <text x="80" y="202" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Raw question</text>
+  <text x="80" y="228" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#5B6675">&#8220;will it hurt during the</text>
+  <text x="80" y="248" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#5B6675">heart operation?&#8221;</text>
+
+  <line x1="350" y1="220" x2="392" y2="220" stroke="#5B6675" stroke-width="1.7" marker-end="url(#m)"/>
+
+  <rect x="398" y="174" width="342" height="92" rx="10" fill="#F7F6FD" stroke="#5B4BC4" stroke-width="1.8"/>
+  <circle cx="424" cy="200" r="13" fill="#5B4BC4"/>
+  <text x="424" y="205" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">1</text>
+  <text x="446" y="205" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Chat Completions API</text>
+  <text x="418" y="230" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">60 max tokens &#183; temperature 0.1 &#183; cached</text>
+  <text x="418" y="250" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">instruction: return keywords, not a sentence</text>
+
+  <line x1="740" y1="220" x2="782" y2="220" stroke="#5B6675" stroke-width="1.7" marker-end="url(#m)"/>
+
+  <rect x="788" y="174" width="352" height="92" rx="10" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="808" y="202" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Optimized search query</text>
+  <text x="808" y="228" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#0E7C6B">cardiac procedure stent</text>
+  <text x="808" y="248" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#0E7C6B">anesthesia pain recovery</text>
+
+  <text x="60" y="298" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#5B6675">Why: the query now speaks the same vocabulary as the documents. Filler words (&#8220;will&#8221;, &#8220;during&#8221;) stop pulling the search off target, and pronouns are resolved from the last two turns.</text>
+  <line x1="60" y1="326" x2="1140" y2="326" stroke="#D9E0E9" stroke-width="1"/>
+
+  <!-- STEP 2 : TWO SEARCHES -->
+  <text x="60" y="362" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#10151F" letter-spacing="2.2">STEP 2 &#8212; TWO WAYS TO SEARCH THE SAME STORE</text>
+
+  <!-- LEFT : TAGS -->
+  <rect x="60" y="382" width="520" height="480" rx="12" fill="#F7F9FB" stroke="#1D6FA5" stroke-width="1.6"/>
+  <text x="82" y="412" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#1D6FA5">A &#183; Search by tags</text>
+  <text x="82" y="434" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">set intersection on labels &#183; no API call &#183; no arithmetic</text>
+
+  <text x="82" y="466" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#5B6675" letter-spacing="1.2">TAGS BUILT FROM THIS REQUEST</text>
+  <rect x="82" y="478" width="104" height="28" rx="14" fill="#FFFFFF" stroke="#1D6FA5"/>
+  <text x="134" y="497" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#1D6FA5">procedure</text>
+  <rect x="194" y="478" width="112" height="28" rx="14" fill="#FFFFFF" stroke="#1D6FA5"/>
+  <text x="250" y="497" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#1D6FA5">hospital_kb</text>
+  <rect x="314" y="478" width="86" height="28" rx="14" fill="#FFFFFF" stroke="#1D6FA5"/>
+  <text x="357" y="497" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#1D6FA5">nstemi</text>
+  <text x="410" y="497" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">&#8592; patient&#8217;s own</text>
+  <text x="410" y="513" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">diagnosis</text>
+
+  <rect x="82" y="530" width="476" height="52" rx="8" fill="#FFFFFF" stroke="#1D6FA5" stroke-width="1.5"/>
+  <text x="98" y="552" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#10151F">Doc 12</text>
+  <text x="164" y="552" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">tags: procedure, stent, angioplasty</text>
+  <text x="524" y="558" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="700" fill="#1D6FA5">&#10003;</text>
+  <text x="98" y="571" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">1 tag overlaps</text>
+
+  <rect x="82" y="592" width="476" height="52" rx="8" fill="#FFFFFF" stroke="#D9E0E9" stroke-width="1.5"/>
+  <text x="98" y="614" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#10151F">Doc 27</text>
+  <text x="164" y="614" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">tags: discharge, diet, activity</text>
+  <text x="524" y="620" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#A3AFBF">&#10007;</text>
+  <text x="98" y="633" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">no overlap &#8212; dropped before scoring</text>
+
+  <rect x="82" y="654" width="476" height="52" rx="8" fill="#FFFFFF" stroke="#1D6FA5" stroke-width="1.5"/>
+  <text x="98" y="676" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#10151F">Doc 04</text>
+  <text x="164" y="676" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">tags: procedure, nstemi, consent</text>
+  <text x="524" y="682" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="700" fill="#1D6FA5">&#10003;</text>
+  <text x="98" y="695" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">2 tags overlap &#8212; ranked higher</text>
+
+  <rect x="82" y="722" width="476" height="46" rx="8" fill="#EFF6FB" stroke="#1D6FA5" stroke-width="1.5"/>
+  <text x="98" y="751" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Result: 2 documents &#8212; short of the 3 needed</text>
+
+  <text x="82" y="790" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#B3600A">&#8594; semantic search runs to fill the gap</text>
+  <text x="82" y="814" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#0E7C6B">&#43; instant, zero cost, perfectly precise on topic and patient</text>
+  <text x="82" y="834" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#B3600A">&#8722; blind to paraphrase &#8212; an untagged relevant doc is invisible</text>
+  <text x="82" y="852" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">API calls: none</text>
+
+  <!-- RIGHT : SEMANTIC -->
+  <rect x="620" y="382" width="520" height="480" rx="12" fill="#F6FAF9" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="642" y="412" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#0E7C6B">B &#183; Semantic search (vectors)</text>
+  <text x="642" y="434" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">match on meaning &#183; one embedding call &#183; cosine similarity</text>
+
+  <rect x="642" y="452" width="476" height="62" rx="9" fill="#F7F6FD" stroke="#5B4BC4" stroke-width="1.8"/>
+  <circle cx="668" cy="478" r="13" fill="#5B4BC4"/>
+  <text x="668" y="483" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">2</text>
+  <text x="690" y="477" font-family="Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#10151F">Embeddings API &#8212; query only</text>
+  <text x="690" y="499" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">text-embedding-3-small &#8594; 1536 numbers &#183; cached</text>
+
+  <!-- scatter -->
+  <rect x="642" y="528" width="476" height="196" rx="9" fill="#FFFFFF" stroke="#D9E0E9"/>
+  <line x1="676" y1="700" x2="1096" y2="700" stroke="#D9E0E9" stroke-width="1.2"/>
+  <line x1="676" y1="700" x2="676" y2="548" stroke="#D9E0E9" stroke-width="1.2"/>
+  <text x="692" y="548" font-family="Helvetica,Arial,sans-serif" font-size="11.5" fill="#A3AFBF">meaning space (projected)</text>
+
+  <circle cx="726" cy="676" r="5" fill="#A3AFBF"/>
+  <circle cx="768" cy="640" r="5" fill="#A3AFBF"/>
+  <circle cx="822" cy="686" r="5" fill="#A3AFBF"/>
+  <circle cx="1024" cy="666" r="5" fill="#A3AFBF"/>
+  <circle cx="1062" cy="612" r="5" fill="#A3AFBF"/>
+  <circle cx="880" cy="694" r="5" fill="#A3AFBF"/>
+  <circle cx="948" cy="672" r="5" fill="#A3AFBF"/>
+
+  <line x1="676" y1="700" x2="906" y2="590" stroke="#0E7C6B" stroke-width="1.8"/>
+  <line x1="676" y1="700" x2="944" y2="606" stroke="#10151F" stroke-width="1.4"/>
+  <line x1="676" y1="700" x2="998" y2="646" stroke="#10151F" stroke-width="1.4"/>
+  <path d="M 775 653 A 110 110 0 0 1 780 663" fill="none" stroke="#B3600A" stroke-width="1.6"/>
+  <text x="790" y="668" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#B3600A">&#952;</text>
+
+  <circle cx="906" cy="590" r="7" fill="#0E7C6B"/>
+  <text x="898" y="576" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#0E7C6B">query vector</text>
+  <circle cx="944" cy="606" r="5.5" fill="#10151F"/>
+  <text x="956" y="600" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#10151F">Doc 41</text>
+  <circle cx="998" cy="646" r="5.5" fill="#10151F"/>
+  <text x="1010" y="642" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#10151F">Doc 09</text>
+  <text x="676" y="716" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#5B6675">each dot is one document &#183; smaller angle &#952; = closer meaning, whatever the wording</text>
+
+  <!-- score bars -->
+  <text x="642" y="754" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#5B6675" letter-spacing="1.2">COSINE SIMILARITY, RANKED</text>
+  <text x="642" y="778" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">Doc 41</text>
+  <rect x="712" y="766" width="330" height="14" rx="7" fill="#E6ECF2"/>
+  <rect x="712" y="766" width="300" height="14" rx="7" fill="#0E7C6B"/>
+  <text x="1052" y="778" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">0.91</text>
+  <text x="642" y="802" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">Doc 09</text>
+  <rect x="712" y="790" width="330" height="14" rx="7" fill="#E6ECF2"/>
+  <rect x="712" y="790" width="257" height="14" rx="7" fill="#0E7C6B"/>
+  <text x="1052" y="802" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">0.86</text>
+  <text x="642" y="826" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#10151F">Doc 27</text>
+  <rect x="712" y="814" width="330" height="14" rx="7" fill="#E6ECF2"/>
+  <rect x="712" y="814" width="129" height="14" rx="7" fill="#C3CDD8"/>
+  <text x="1052" y="826" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#5B6675">0.62</text>
+  <text x="642" y="850" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">below the cut &#8212; wrong topic, similar words. Topic filter still applies.</text>
+
+  <!-- fallback link -->
+  <path d="M 580 745 L 614 745" stroke="#B3600A" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#mB)"/>
+
+  <!-- merge to top3 -->
+  <path d="M 320 862 L 320 898 L 600 898 L 600 922" stroke="#1D6FA5" stroke-width="1.7" fill="none" marker-end="url(#mT)"/>
+  <path d="M 880 862 L 880 898 L 600 898" stroke="#0E7C6B" stroke-width="1.7" fill="none"/>
+
+  <rect x="410" y="926" width="380" height="76" rx="10" fill="#FFFFFF" stroke="#10151F" stroke-width="1.8"/>
+  <text x="600" y="956" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="700" fill="#10151F">Top 3 documents</text>
+  <text x="600" y="980" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">tag hits first, vector hits topping up, de-duplicated</text>
+
+  <line x1="600" y1="1002" x2="600" y2="1032" stroke="#5B6675" stroke-width="1.7" marker-end="url(#m)"/>
+
+  <rect x="300" y="1036" width="600" height="98" rx="10" fill="#F7F6FD" stroke="#5B4BC4" stroke-width="1.8"/>
+  <circle cx="330" cy="1064" r="13" fill="#5B4BC4"/>
+  <text x="330" y="1069" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">3</text>
+  <text x="352" y="1069" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Chat Completions API &#8212; streaming</text>
+  <text x="322" y="1094" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">system prompt &#43; the 3 retrieved documents &#43; recent turns &#43; the question</text>
+  <text x="322" y="1116" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#5B6675">answers from the supplied text, not from what the model happens to remember</text>
+
+  <line x1="600" y1="1134" x2="600" y2="1164" stroke="#5B6675" stroke-width="1.7" marker-end="url(#m)"/>
+  <rect x="440" y="1168" width="320" height="52" rx="10" fill="#F2F8F7" stroke="#0E7C6B" stroke-width="1.8"/>
+  <text x="600" y="1200" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#10151F">Answer, streamed to the patient</text>
+
+  <!-- api ledger -->
+  <line x1="60" y1="1258" x2="1140" y2="1258" stroke="#D9E0E9" stroke-width="1"/>
+  <text x="60" y="1290" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#5B4BC4" letter-spacing="2.2">MODEL CALLS PER QUESTION</text>
+
+  <circle cx="74" cy="1322" r="12" fill="#5B4BC4"/>
+  <text x="74" y="1327" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#FFFFFF">1</text>
+  <text x="94" y="1319" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#10151F">Rewrite the query</text>
+  <text x="94" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">60 tokens, cached per phrasing</text>
+
+  <circle cx="434" cy="1322" r="12" fill="#5B4BC4"/>
+  <text x="434" y="1327" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#FFFFFF">2</text>
+  <text x="454" y="1319" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#10151F">Embed the query</text>
+  <text x="454" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">skipped entirely when tags suffice</text>
+
+  <circle cx="794" cy="1322" r="12" fill="#5B4BC4"/>
+  <text x="794" y="1327" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="700" fill="#FFFFFF">3</text>
+  <text x="814" y="1319" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#10151F">Generate the answer</text>
+  <text x="814" y="1338" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">the only unavoidable call</text>
+
+  <text x="60" y="1382" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#5B6675">Document embeddings are not on this list &#8212; they are computed once, cached in the database, and reused for every question that follows.</text>
+</svg>

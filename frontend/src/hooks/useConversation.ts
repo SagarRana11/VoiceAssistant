@@ -118,6 +118,7 @@ export function useConversation(opts: Opts = {}): Return {
         await apiStreamMessage(conversationId, trimmed, currentRole, (chunk) => {
           fullResponse              += chunk;
           sentenceBufferRef.current += chunk;
+          setStreamingResponse(fullResponse); // live-render the reply as it streams
 
           // When D-ID is active, skip mid-stream sentence enqueue —
           // we send the full response to D-ID after the stream ends.
@@ -163,8 +164,7 @@ export function useConversation(opts: Opts = {}): Return {
         }
         sentenceBufferRef.current = '';
 
-        // ⑤ Show full response, then commit to transcript
-        setStreamingResponse(fullResponse);
+        // ⑤ Commit the streamed response to the transcript
         addMessage({
           id:        `assistant-${Date.now()}`,
           role:      'assistant',
@@ -175,6 +175,7 @@ export function useConversation(opts: Opts = {}): Return {
 
         setAssistantState('idle');
       } catch (err) {
+        setStreamingResponse('');
         setAssistantState('idle');
         setError((err as Error).message);
       } finally {

@@ -53,12 +53,12 @@ export function AssistantPage() {
   const assessment = useAssessment();
 
   /**
-   * Global input bar handler — routes to agent (plan generation / health Q&A).
+   * Global input bar handler — routes to role chat (/api/chat, Python backend).
    * If a standard session is active, stop it first.
    */
-  const handleGlobalSubmit = async (message: string, mode: 'voice' | 'text') => {
+  const handleGlobalSubmit = async (message: string, _mode: 'voice' | 'text') => {
     if (isListening) stopSession();
-    await agent.submitMessage(message, mode);
+    await submitText(message);
   };
 
   // ── Context value ──────────────────────────────────────────────────────

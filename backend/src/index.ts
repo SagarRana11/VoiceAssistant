@@ -16,6 +16,7 @@ import hospitalRoutes from './routes/hospital';
 import cathLabRoutes from './routes/cathlab';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import codewriter from './routes/codeWriter';
+import ragRoutes from './routes/rag';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '5000', 10);
@@ -56,6 +57,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/cathlab', cathLabRoutes);
 app.use('/api/code', codewriter);
+app.use('/api/rag', ragRoutes);
 
 // ─── 404 + Error Handlers ─────────────────────────────────────────────────────
 app.use(notFound);

@@ -30,14 +30,15 @@ export async function loadPdfAsKnowledgeDocs(
 
   for (let i = 0; i < rawSections.length; i++) {
     const section = rawSections[i].trim();
-    if (i === 0) console.log('section>>>>', section);
+    console.log('section>>>>', section);
     // Extract heading (first line) and body (rest)
     const lines: string[] = section.split('\n').filter((l: string) => l.trim().length > 0);
     if (lines.length === 0) continue;
 
     const title = lines[0].replace(/^\d+\.\s*/, '').trim();
+    console.log('title?>>>', title);
     const content = lines.slice(1).join('\n').trim();
-    if (i === 0) console.log('content>>>>', content);
+    console.log('content>>>>', content);
 
     if (!content) continue;
 

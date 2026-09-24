@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1540" width="1200" height="1540" role="img" aria-label="Cardiac RAG pipeline: index time builds tagged knowledge docs into MongoDB-cached 1536-dimension embeddings loaded into an in-memory vector store; query time classifies the patient question into a category, rewrites it into keywords, searches by tags with a cosine-similarity fallback, and injects the top 3 documents into the system prompt before streaming the answer.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8FA3C0"/>
+    </marker>
+    <marker id="ahT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2DD4BF"/>
+    </marker>
+    <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F5A524"/>
+    </marker>
+    <marker id="ahV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#A78BFA"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="1540" fill="#0B1220"/>
+
+  <!-- Header -->
+  <text x="50" y="60" font-family="Helvetica,Arial,sans-serif" font-size="34" font-weight="700" fill="#E6EDF7">Retrieval-Augmented Generation, end to end</text>
+  <text x="50" y="94" font-family="Helvetica,Arial,sans-serif" font-size="17" fill="#8FA3C0">Cardiac patient-education assistant &#183; hybrid tag + vector retrieval &#183; TypeScript / Express / MongoDB / OpenAI</text>
+  <line x1="50" y1="116" x2="1150" y2="116" stroke="#2A3A55" stroke-width="1"/>
+
+  <!-- ============ INDEX TIME ============ -->
+  <text x="50" y="152" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#A78BFA" letter-spacing="2">INDEX TIME &#8212; runs once, then served from cache</text>
+
+  <!-- B1 sources -->
+  <rect x="50" y="170" width="252" height="126" rx="10" fill="#131C2E" stroke="#A78BFA" stroke-width="1.4"/>
+  <text x="66" y="196" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#A78BFA">1 &#183; SOURCE DOCS</text>
+  <text x="66" y="220" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">kb/disease/ kb/consent/</text>
+  <text x="66" y="240" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">kb/procedure/ kb/discharge/</text>
+  <text x="66" y="260" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">kb/medicine/ kb/hospital/</text>
+  <text x="66" y="282" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">+ PDF &#8594; pdfLoader (split on headings)</text>
+
+  <line x1="302" y1="233" x2="336" y2="233" stroke="#8FA3C0" stroke-width="1.6" marker-end="url(#ah)"/>
+
+  <!-- B2 chunk+tag -->
+  <rect x="340" y="170" width="240" height="126" rx="10" fill="#131C2E" stroke="#2A3A55" stroke-width="1.4"/>
+  <text x="356" y="196" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#A78BFA">2 &#183; CHUNK + TAG</text>
+  <text x="356" y="222" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">KnowledgeDoc {</text>
+  <text x="366" y="242" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">id, category, title,</text>
+  <text x="366" y="262" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">content, tags[]</text>
+  <text x="356" y="282" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">}</text>
+
+  <line x1="580" y1="233" x2="614" y2="233" stroke="#8FA3C0" stroke-width="1.6" marker-end="url(#ah)"/>
+
+  <!-- B3 embed -->
+  <rect x="618" y="170" width="252" height="126" rx="10" fill="#131C2E" stroke="#2A3A55" stroke-width="1.4"/>
+  <text x="634" y="196" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#A78BFA">3 &#183; EMBED (change-aware)</text>
+  <text x="634" y="222" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">md5(title + content) = hash</text>
+  <text x="634" y="244" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">hash unchanged &#8594; reuse vector</text>
+  <text x="634" y="266" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">changed &#8594; OpenAI embeddings</text>
+  <text x="634" y="286" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#2DD4BF">text-embedding-3-small &#183; 1536-d</text>
+
+  <line x1="870" y1="233" x2="904" y2="233" stroke="#8FA3C0" stroke-width="1.6" marker-end="url(#ah)"/>
+
+  <!-- B4 store -->
+  <rect x="908" y="170" width="242" height="126" rx="10" fill="#131C2E" stroke="#A78BFA" stroke-width="1.4"/>
+  <text x="924" y="196" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#A78BFA">4 &#183; VECTOR STORE</text>
+  <text x="924" y="222" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">DomainVectorStore</text>
+  <text x="924" y="242" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">('hospital')</text>
+  <text x="924" y="264" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">in-memory [{ doc, embedding }]</text>
+  <text x="924" y="286" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">lazy init, single-flight promise</text>
+
+  <!-- Mongo -->
+  <rect x="618" y="336" width="252" height="76" rx="10" fill="#101A2B" stroke="#A78BFA" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="634" y="362" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#E6EDF7">MongoDB &#183; KnowledgeEmbedding</text>
+  <text x="634" y="384" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">{ docId, tags, embedding, contentHash }</text>
+  <text x="634" y="403" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">stale docIds deleted on load</text>
+
+  <path d="M 690 296 L 690 332" stroke="#A78BFA" stroke-width="1.5" fill="none" marker-end="url(#ahV)"/>
+  <text x="700" y="318" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#A78BFA">upsert vector</text>
+  <path d="M 812 332 L 812 296" stroke="#A78BFA" stroke-width="1.5" fill="none" marker-end="url(#ahV)"/>
+  <text x="822" y="318" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#A78BFA">cache hit</text>
+
+  <path d="M 870 401 L 1029 401 L 1029 300" stroke="#A78BFA" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#ahV)"/>
+  <text x="886" y="420" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#A78BFA">load on boot</text>
+
+  <line x1="50" y1="452" x2="1150" y2="452" stroke="#2A3A55" stroke-width="1"/>
+
+  <!-- ============ QUERY TIME ============ -->
+  <text x="50" y="488" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#2DD4BF" letter-spacing="2">QUERY TIME &#8212; every patient message</text>
+
+  <!-- QA -->
+  <rect x="400" y="506" width="400" height="62" rx="10" fill="#131C2E" stroke="#2DD4BF" stroke-width="1.6"/>
+  <text x="420" y="531" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#2DD4BF">PATIENT ASKS (voice or text)</text>
+  <text x="420" y="554" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#E6EDF7">&#8220;Will it hurt during the heart operation?&#8221;</text>
+
+  <line x1="600" y1="568" x2="600" y2="600" stroke="#2DD4BF" stroke-width="1.8" marker-end="url(#ahT)"/>
+
+  <!-- QB -->
+  <rect x="330" y="604" width="540" height="56" rx="10" fill="#131C2E" stroke="#2A3A55" stroke-width="1.4"/>
+  <text x="350" y="628" font-family="Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#E6EDF7">hospitalChat()</text>
+  <text x="470" y="628" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">controllers/hospitalController.ts &#183; opens SSE stream</text>
+  <text x="350" y="648" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">loads patient record: name &#183; diagnosis &#183; plannedProcedure &#183; last 10 turns</text>
+
+  <!-- fan out -->
+  <path d="M 600 660 L 600 682 L 325 682 L 325 706" stroke="#2DD4BF" stroke-width="1.6" fill="none" marker-end="url(#ahT)"/>
+  <path d="M 600 660 L 600 682 L 875 682 L 875 706" stroke="#2DD4BF" stroke-width="1.6" fill="none" marker-end="url(#ahT)"/>
+
+  <!-- QC classify -->
+  <rect x="90" y="710" width="470" height="116" rx="10" fill="#131C2E" stroke="#2A3A55" stroke-width="1.4"/>
+  <text x="108" y="736" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#2DD4BF">A &#183; classifyQueryCategory(message)</text>
+  <text x="108" y="760" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">regex on raw text, first match wins:</text>
+  <text x="108" y="782" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#E6EDF7">medicine &#183; discharge &#183; consent &#183; procedure &#183; hospital &#183; disease</text>
+  <text x="108" y="804" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">no match &#8594; 'all' &#8594; CATEGORY_SETS[cat] = target categories</text>
+
+  <!-- QD rewrite -->
+  <rect x="640" y="710" width="470" height="116" rx="10" fill="#131C2E" stroke="#2A3A55" stroke-width="1.4"/>
+  <text x="658" y="736" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#2DD4BF">B &#183; rewriteQueryForRetrieval(msg, 'hospital', history)</text>
+  <text x="658" y="760" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">small LLM call &#183; 60 tok &#183; temp 0.1 &#183; 50-entry LRU</text>
+  <text x="658" y="782" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#8FA3C0">last 2 turns resolve &#8220;it&#8221;, &#8220;that&#8221; &#8594; 6&#8211;10 keywords</text>
+  <text x="658" y="804" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#2DD4BF">cardiac procedure PCI stent anesthesia pain recovery</text>
+
+  <!-- merge -->
+  <path d="M 325 826 L 325 852 L 600 852 L 600 876" stroke="#2DD4BF" stroke-width="1.6" fill="none" marker-end="url(#ahT)"/>
+  <path d="M 875 826 L 875 852 L 600 852" stroke="#2DD4BF" stroke-width="1.6" fill="none"/>
+  <text x="612" y="846" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#8FA3C0">category + rewritten query + diagnosis</text>
+
+  <!-- QE panel -->
+  <rect x="90" y="880" width="1020" height="300" rx="12" fill="#0E1728" stroke="#2DD4BF" stroke-width="1.4"/>
+  <text x="110" y="908" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#2DD4BF">C &#183; retrieveHospitalDocs(query, category, diagnosis, topK = 3)</text>
+
+  <rect x="112" y="924" width="266" height="92" rx="9" fill="#131C2E" stroke="#2A3A55"/>
+  <text x="128" y="948" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#E6EDF7">searchByTags(tags, 5)</text>
+  <text x="128" y="970" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">tags = target categories</text>
+  <text x="128" y="989" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">+ 'hospital_kb'</text>
+  <text x="128" y="1008" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">+ diagnosis slug (e.g. nstemi)</text>
+
+  <line x1="378" y1="970" x2="410" y2="970" stroke="#8FA3C0" stroke-width="1.6" marker-end="url(#ah)"/>
+
+  <rect x="414" y="924" width="216" height="92" rx="9" fill="#131C2E" stroke="#2A3A55"/>
+  <text x="430" y="948" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#E6EDF7">filter</text>
+  <text x="430" y="970" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">keep doc.category</text>
+  <text x="430" y="989" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">&#8712; target categories</text>
+  <text x="430" y="1008" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">cheap, exact, no vectors</text>
+
+  <line x1="630" y1="970" x2="662" y2="970" stroke="#8FA3C0" stroke-width="1.6" marker-end="url(#ah)"/>
+
+  <rect x="666" y="932" width="180" height="76" rx="9" fill="#131C2E" stroke="#F5A524"/>
+  <text x="756" y="962" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#F5A524">hits &#60; 3 ?</text>
+  <text x="756" y="984" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">tag recall too thin</text>
+
+  <line x1="846" y1="970" x2="898" y2="970" stroke="#2DD4BF" stroke-width="1.6" marker-end="url(#ahT)"/>
+  <text x="852" y="960" font-family="Helvetica,Arial,sans-serif" font-size="11.5" fill="#2DD4BF">no</text>
+
+  <rect x="902" y="924" width="188" height="92" rx="9" fill="#131C2E" stroke="#2DD4BF" stroke-width="1.4"/>
+  <text x="918" y="948" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#E6EDF7">top 3 docs</text>
+  <text x="918" y="970" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">formatDoc():</text>
+  <text x="918" y="989" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">### title + content</text>
+  <text x="918" y="1008" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">joined with ---</text>
+
+  <!-- fallback -->
+  <path d="M 756 1008 L 756 1036 L 500 1036 L 500 1062" stroke="#F5A524" stroke-width="1.6" fill="none" marker-end="url(#ahA)"/>
+  <text x="766" y="1030" font-family="Helvetica,Arial,sans-serif" font-size="11.5" fill="#F5A524">yes &#8594; semantic fallback</text>
+
+  <rect x="200" y="1066" width="600" height="94" rx="9" fill="#161B26" stroke="#F5A524" stroke-width="1.4"/>
+  <text x="218" y="1092" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#F5A524">similaritySearch(rewrittenQuery, 5)</text>
+  <text x="218" y="1114" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#E6EDF7">getEmbedding(query) &#8594; 1536-d query vector (LRU-cached)</text>
+  <text x="218" y="1133" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">cosine similarity vs every stored vector &#8594; sort desc &#8594; slice</text>
+  <text x="218" y="1152" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">de-dupe by doc.id, re-check category, fill until 3</text>
+
+  <path d="M 800 1113 L 996 1113 L 996 1020" stroke="#F5A524" stroke-width="1.6" fill="none" marker-end="url(#ahA)"/>
+  <text x="812" y="1104" font-family="Helvetica,Arial,sans-serif" font-size="11.5" fill="#F5A524">top up</text>
+
+  <!-- out of panel -->
+  <line x1="996" y1="1180" x2="996" y2="1206" stroke="#2DD4BF" stroke-width="1.8" fill="none"/>
+  <path d="M 996 1206 L 600 1206 L 600 1230" stroke="#2DD4BF" stroke-width="1.8" fill="none" marker-end="url(#ahT)"/>
+  <text x="612" y="1200" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#8FA3C0">retrieved context block</text>
+
+  <!-- QG prompt assembly -->
+  <rect x="150" y="1234" width="900" height="126" rx="10" fill="#131C2E" stroke="#2DD4BF" stroke-width="1.6"/>
+  <text x="170" y="1260" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="700" fill="#2DD4BF">D &#183; PROMPT ASSEMBLY</text>
+  <text x="170" y="1285" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">systemPrompt = hospitalSystemPrompt(name, diagnosis, plannedProcedure) + &#8220;Relevant medical knowledge:&#8221; + context</text>
+  <text x="170" y="1308" font-family="Helvetica,Arial,sans-serif" font-size="13.5" fill="#E6EDF7">messages = [ system, ...history.slice(-10), { role: 'user', content: message } ]</text>
+  <text x="170" y="1332" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">guardrails baked in: no new diagnosis &#183; no medication changes &#183; escalate chest pain &#183; 2&#8211;4 sentences, voice-friendly</text>
+  <text x="170" y="1351" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">model never answers from parametric memory alone &#8212; the retrieved KB is the ground truth</text>
+
+  <line x1="600" y1="1360" x2="600" y2="1390" stroke="#2DD4BF" stroke-width="1.8" marker-end="url(#ahT)"/>
+
+  <!-- QH stream -->
+  <rect x="150" y="1394" width="900" height="66" rx="10" fill="#131C2E" stroke="#2DD4BF" stroke-width="1.6"/>
+  <text x="170" y="1420" font-family="Helvetica,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#E6EDF7">streamOpenAI(messages) &#8594; SSE token chunks &#8594; patient hears the answer</text>
+  <text x="170" y="1444" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">full turn persisted to HospitalChatHistory (upsert per patient + session) &#8594; feeds the next rewrite's context</text>
+
+  <!-- legend -->
+  <line x1="50" y1="1488" x2="1150" y2="1488" stroke="#2A3A55" stroke-width="1"/>
+  <rect x="50" y="1502" width="26" height="4" rx="2" fill="#A78BFA"/>
+  <text x="86" y="1510" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">index-time / persistence</text>
+  <rect x="270" y="1502" width="26" height="4" rx="2" fill="#2DD4BF"/>
+  <text x="306" y="1510" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">happy path (tags hit)</text>
+  <rect x="480" y="1502" width="26" height="4" rx="2" fill="#F5A524"/>
+  <text x="516" y="1510" font-family="Helvetica,Arial,sans-serif" font-size="12.5" fill="#8FA3C0">semantic fallback (tags too thin)</text>
+</svg>
