@@ -11,6 +11,7 @@ hash changes; docs removed from the source are removed here too.
 
     python -m app.ingest            # all domains
     python -m app.ingest exercise   # one domain
+    python -m app.ingest hrms       # company policy PDFs
 """
 import asyncio
 import hashlib
@@ -24,6 +25,7 @@ from .db import KnowledgeEmbedding as KE, Session, now
 from .sources import load_domain_docs
 
 DOMAINS = ["exercise", "diet", "meditation", "general"]
+HRMS_DOMAIN = "hrms"  # kept out of DOMAINS so general chat never searches HR policies
 BATCH = 16
 
 
@@ -77,4 +79,4 @@ async def main(domains: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main(sys.argv[1:] or DOMAINS))
+    asyncio.run(main(sys.argv[1:] or [*DOMAINS, HRMS_DOMAIN]))

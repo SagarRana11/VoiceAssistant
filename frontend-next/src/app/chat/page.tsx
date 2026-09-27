@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -139,6 +140,9 @@ export default function ChatPage() {
       >
         <div className="flex items-center justify-between px-5 pt-5">
           <span className="font-display text-lg font-semibold">Voice Assistant</span>
+          <Link href="/hrms" className="text-sm text-ink-soft hover:text-ink">
+            HR policies →
+          </Link>
           <button className="text-sm text-ink-soft md:hidden" onClick={() => setRailOpen(false)}>
             Close
           </button>

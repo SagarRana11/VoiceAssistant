@@ -1,4 +1,4 @@
-"""Postgres (SQLAlchemy async + pgvector) — users, conversations, messages, knowledge embeddings."""
+"""Postgres (SQLAlchemy async + pgvector) — users, conversations, messages, knowledge embeddings, employees."""
 import uuid
 from datetime import datetime, timezone
 
@@ -71,6 +71,10 @@ class KnowledgeEmbedding(Timestamps, Base):
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM))
     content_hash: Mapped[str] = mapped_column(String(32))
     model: Mapped[str] = mapped_column(String(100))
+
+
+# Register employee models on Base.metadata (after Base is defined; avoids circular import)
+from .models import employee  # noqa: E402,F401
 
 
 async def init_db() -> None:

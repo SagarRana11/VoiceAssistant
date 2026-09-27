@@ -7,7 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from pydantic.alias_generators import to_camel
 
-RoleId = Literal["general", "therapist", "health", "career", "fitness"]
+RoleId = Literal["general", "therapist", "health", "career", "fitness", "hrms"]
 
 
 class CamelModel(BaseModel):

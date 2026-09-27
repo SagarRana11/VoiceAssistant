@@ -5,9 +5,7 @@ Standalone: /api/auth (register/login/me) + /api/chat, backed by Postgres (pgvec
 No dependency on the Node backend.
 """
 import json
-import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 
 import uvicorn
@@ -21,17 +19,25 @@ from sqlalchemy.orm import selectinload
 from . import llm
 from .auth import current_user
 from .auth_routes import router as auth_router
+from .chat_common import (
+    conv_uuid,
+    conversation_fields,
+    conversation_out,
+    iso,
+    load_conversation,
+    message_out,
+    push_message,
+)
 from .config import CLIENT_URL, PORT
-from .db import Conversation, Message, Session, User, init_db, now
+from .db import Conversation, Session, User, init_db, now
+from .hrms_routes import router as hrms_router
 from .rag import get_rag_context
 from .schemas import (
     ConversationListResponse,
-    ConversationOut,
     ConversationResponse,
     ConversationSummary,
     CreateConversationBody,
     DeleteResponse,
-    MessageOut,
     SendMessageBody,
 )
 
@@ -68,48 +74,6 @@ async def validation_error(_req: Request, exc: RequestValidationError):
     return JSONResponse({"message": f"{field}: {err['msg']}" if field else err["msg"]}, status_code=400)
 
 
-def iso(value: datetime) -> str:
-    return value.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-
-def message_out(m: Message) -> MessageOut:
-    return MessageOut(id=str(m.id), role=m.role, content=m.content, timestamp=iso(m.timestamp))
-
-
-def conversation_fields(c: Conversation) -> dict:
-    return dict(
-        id=str(c.id),
-        user_id=str(c.user_id),
-        role_id=c.role_id,
-        role_name=c.role_name,
-        created_at=iso(c.created_at),
-        updated_at=iso(c.updated_at),
-    )
-
-
-def conversation_out(c: Conversation) -> ConversationOut:
-    return ConversationOut(**conversation_fields(c), messages=[message_out(m) for m in c.messages])
-
-
-def conv_uuid(value: str) -> uuid.UUID:
-    try:
-        return uuid.UUID(str(value))
-    except ValueError:
-        raise HTTPException(404, "Conversation not found.")
-
-
-async def load_conversation(conv_id: str, user: User) -> Conversation:
-    async with Session() as s:
-        conv = await s.scalar(
-            select(Conversation)
-            .options(selectinload(Conversation.messages))
-            .where(Conversation.id == conv_uuid(conv_id), Conversation.user_id == user.id)
-        )
-    if not conv:
-        raise HTTPException(404, "Conversation not found.")
-    return conv
-
-
 router = APIRouter(prefix="/api/chat", dependencies=[Depends(current_user)])
 
 
@@ -131,7 +95,7 @@ async def list_conversations(user: User = Depends(current_user)) -> Conversation
             await s.scalars(
                 select(Conversation)
                 .options(selectinload(Conversation.messages))
-                .where(Conversation.user_id == user.id)
+                .where(Conversation.user_id == user.id, Conversation.role_id != "hrms")
                 .order_by(Conversation.updated_at.desc())
             )
         ).all()
@@ -163,15 +127,6 @@ async def delete_conversation(conv_id: str, user: User = Depends(current_user)) 
     return DeleteResponse(message="Conversation deleted.")
 
 
-async def _push_message(conv_id: uuid.UUID, role: str, content: str) -> None:
-    async with Session() as s:
-        s.add(Message(conversation_id=conv_id, role=role, content=content))
-        conv = await s.get(Conversation, conv_id)
-        if conv:
-            conv.updated_at = now()
-        await s.commit()
-
-
 # ─── POST /api/chat/message  (SSE streaming) ──────────────────────────────────
 @router.post("/message")
 async def send_message(body: SendMessageBody, user: User = Depends(current_user)):
@@ -184,7 +139,7 @@ async def send_message(body: SendMessageBody, user: User = Depends(current_user)
     async def stream():
         try:
             text = message.strip()
-            await _push_message(conv.id, "user", text)
+            await push_message(conv.id, "user", text)
             history = [{"role": m.role, "content": m.content} for m in conv.messages]
             history.append({"role": "user", "content": text})
 
@@ -197,7 +152,7 @@ async def send_message(body: SendMessageBody, user: User = Depends(current_user)
                 full += chunk
                 yield event({"content": chunk})
 
-            await _push_message(conv.id, "assistant", full)
+            await push_message(conv.id, "assistant", full)
             yield event({"done": True, "conversationId": str(conv.id)})
         except Exception as err:
             yield event({"error": str(err)})
@@ -211,6 +166,7 @@ async def send_message(body: SendMessageBody, user: User = Depends(current_user)
 
 app.include_router(auth_router)
 app.include_router(router)
+app.include_router(hrms_router)
 
 
 @app.get("/health")

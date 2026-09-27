@@ -108,6 +108,9 @@ _REWRITE_PROMPTS = {
     "general": """Rewrite the user message as a standalone search query of 6–12 lowercase keywords for a document vector search.
 Resolve pronouns and follow-ups using the conversation. Keep names, places, laws, articles and key terms. No punctuation.
 Example: "what are my fundamental duties in india" → fundamental duties citizens india constitution article 51a""",
+    "hrms": """Rewrite the user message as a standalone search query of 6–12 lowercase keywords for a company HR policy search.
+Resolve follow-ups using the conversation. Keep policy terms, numbers, countries, cities, levels and acronyms (posh, lop, f&f, pf, sev1). No punctuation.
+Example: "how many sick days do I get and do I need a note" → sick leave days per year medical certificate consecutive days leave policy""",
     "fitness": """Rewrite the user message as 6–10 space-separated lowercase keywords for a fitness vector search.
 No sentences, no punctuation. Focus on: exercise types, muscle groups, goals, training variables, recovery.
 Example: "tired and can't lose weight" → fatigue energy weight loss calorie deficit cardio resistance training recovery""",

@@ -129,6 +129,10 @@ def _load_general() -> list[dict]:
 def load_domain_docs(domain: str) -> list[dict]:
     if domain == "general":
         return _load_general()
+    if domain == "hrms":  # company policy PDFs, per-layout chunking (app/hrms_sources.py)
+        from .hrms_sources import load_hrms_docs
+
+        return load_hrms_docs()
     docs = _load_ts(domain)
     for f in PDF_FILES.get(domain, []):
         try:
