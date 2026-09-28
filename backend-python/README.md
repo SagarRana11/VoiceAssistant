@@ -110,6 +110,8 @@ Errors are always `{ "message": "..." }`. Bodies are Pydantic models (`app/schem
 | `app/chat_common.py` | Shared conversation helpers (load/push message, serializers, SSE) for `/api/chat` and `/api/hrms` |
 | `app/hrms_sources.py` | Chunks `company_docs/pdf/*.pdf` for RAG domain `hrms`: pypdf visitor → positioned lines (font/size/x/y) → one chunker per layout (book/legal/faq/slides/memo/matrix/sheet/checklist/twocol). Interim; industry-grade per-PDF chunking is next |
 | `app/hrms_rag.py` | HRMS retrieval: rewrite query (`hrms` prompt) → pgvector top 15 in `hrms` → Cohere rerank 5 → context + sources |
+| `app/hrms_chunking/types.py` | TypedDicts for the chunking pipeline: `RawLine` → `Element` (heading/para/table tagged union) → `ParentSpec`/`ChildSpec` → `ParentRow`/`ChildRow` (+ `ChildMeta`, `EntityMeta`, `MemoMeta`, `IngestedMeta`) |
+| `mypy.ini` | `mypy --strict` (+ no explicit `Any`) over `app/hrms_chunking` + `scripts/eval_hrms.py`; rest of `app` imported silently. Run `.venv/bin/python -m mypy` (dev deps: `requirements-dev.txt`) |
 | `app/hrms_routes.py` | `/api/hrms` router (conversations + SSE message), HR system prompt from `roles.json["hrms"]` |
 
 ## HRMS flow
@@ -156,3 +158,6 @@ Next: RAG over employee data for the 5 John questions (TODO.md).
 - 2026-09-25: HRMS RAG. `/api/hrms` routes + `/hrms` Next.js page; interim per-layout PDF chunker, 219 chunks embedded; verified end-to-end with curl.
   Known issue: matrix rows with wrapped labels mis-pair (e.g. sick leave answered 6 instead of 12). Next: industry-grade per-PDF chunking
   (structure-aware elements, parent–child, contextual retrieval, table-row serialization, metadata filters, hybrid BM25+vector, eval set).
+
+2026-09-29: strict typing for `app/hrms_chunking/*` + `scripts/eval_hrms.py` — all functions annotated, dict shapes as
+TypedDicts in `hrms_chunking/types.py`, `mypy` clean. Verified chunk output byte-identical to pre-change (all parents/children/meta).

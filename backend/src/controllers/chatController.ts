@@ -14,9 +14,12 @@ async function getRagContext(
 ): Promise<string> {
   try {
     if (roleId === 'fitness') {
+      //  rewriting //
       const query = await rewriteQueryForRetrieval(message, 'fitness', history);
+      // retrival of documents
       const candidates = await retrieveExerciseDocs(query, 15); // fetch wide
       console.log('candidates>>>', candidates);
+      // reranking
       const docs = await rerankDocs(query, candidates, 5); // rerank narrow
       console.log('docs>>>', docs);
       if (docs.length === 0) return '';

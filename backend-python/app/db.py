@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime, timezone
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, ForeignKey, Index, String, Text, UniqueConstraint, text
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy import Boolean, Computed, DateTime, ForeignKey, Index, String, Text, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -69,6 +69,38 @@ class KnowledgeEmbedding(Timestamps, Base):
     content: Mapped[str] = mapped_column(Text)
     tags: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM))
+    content_hash: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str] = mapped_column(String(100))
+
+
+class HrmsParent(Timestamps, Base):
+    """Parent section / article / table / slide of a company policy PDF — what the LLM reads (small-to-big)."""
+    __tablename__ = "hrms_parents"
+    parent_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    doc: Mapped[str] = mapped_column(String(100), index=True)
+    title: Mapped[str] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(Text)
+
+
+class HrmsChunk(Timestamps, Base):
+    """Child chunk of a policy PDF — the retrieval unit (vector + full-text), see app/hrms_chunking/."""
+    __tablename__ = "hrms_chunks"
+    __table_args__ = (
+        Index("ix_hrms_chunks_tsv", "tsv", postgresql_using="gin"),
+        Index("ix_hrms_chunks_meta", "meta", postgresql_using="gin"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    doc_id: Mapped[str] = mapped_column(String(220), unique=True)
+    parent_id: Mapped[str] = mapped_column(ForeignKey("hrms_parents.parent_id", ondelete="CASCADE"), index=True)
+    doc: Mapped[str] = mapped_column(String(100), index=True)
+    doc_type: Mapped[str] = mapped_column(String(32))
+    element_type: Mapped[str] = mapped_column(String(32))
+    content: Mapped[str] = mapped_column(Text)
+    embed_text: Mapped[str] = mapped_column(Text)
+    embed_only: Mapped[bool] = mapped_column(Boolean, default=False)  # e.g. FAQ question-only vector
+    meta: Mapped[dict] = mapped_column(JSONB, default=dict)
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM))
+    tsv = mapped_column(TSVECTOR, Computed("to_tsvector('english', embed_text)", persisted=True))
     content_hash: Mapped[str] = mapped_column(String(32))
     model: Mapped[str] = mapped_column(String(100))
 

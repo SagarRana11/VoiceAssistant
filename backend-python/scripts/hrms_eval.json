@@ -1,0 +1,290 @@
+[
+ {
+  "doc": "01-employee-handbook",
+  "q": "I just joined, how long until I'm confirmed?",
+  "anchor": "probation",
+  "fact": "6 months"
+ },
+ {
+  "doc": "01-employee-handbook",
+  "q": "I'm a Lead, how much notice do I owe if I resign?",
+  "anchor": "lead",
+  "fact": "90 days"
+ },
+ {
+  "doc": "01-employee-handbook",
+  "q": "Is there free counselling I can phone in India?",
+  "anchor": "EAP",
+  "fact": "1800-000-NIMBUS"
+ },
+ {
+  "doc": "02-leave-policy",
+  "q": "I'm unwell, how many paid days off for illness per year?",
+  "anchor": "sick leave",
+  "fact": "12"
+ },
+ {
+  "doc": "02-leave-policy",
+  "q": "What happens to unused annual leave at year end?",
+  "anchor": "carry",
+  "fact": "10"
+ },
+ {
+  "doc": "02-leave-policy",
+  "q": "My wife is having a baby, how much time off do I get?",
+  "anchor": "paternity",
+  "fact": "4 weeks"
+ },
+ {
+  "doc": "03-code-of-conduct",
+  "q": "A vendor wants to send me a present, what's the maximum value I can keep?",
+  "anchor": "gifts",
+  "fact": "USD 50"
+ },
+ {
+  "doc": "03-code-of-conduct",
+  "q": "A client invited me to a luxury weekend while we renegotiate, can I go?",
+  "anchor": "5-star",
+  "fact": "No"
+ },
+ {
+  "doc": "03-code-of-conduct",
+  "q": "I'm dating someone in my team, what must I do?",
+  "anchor": "relationship",
+  "fact": "declared to HR"
+ },
+ {
+  "doc": "04-anti-harassment-posh-policy",
+  "q": "Someone at work made inappropriate advances, how long do I have to complain?",
+  "anchor": "complaint",
+  "fact": "3 months"
+ },
+ {
+  "doc": "04-anti-harassment-posh-policy",
+  "q": "Who leads the harassment inquiry committee?",
+  "anchor": "presiding officer",
+  "fact": "senior woman"
+ },
+ {
+  "doc": "04-anti-harassment-posh-policy",
+  "q": "Where do I email a sexual harassment complaint?",
+  "anchor": "contact",
+  "fact": "ic@nimbus.example"
+ },
+ {
+  "doc": "05-information-security-policy",
+  "q": "Client data leaked, how fast must leadership know?",
+  "anchor": "SEV1",
+  "fact": "2 hours"
+ },
+ {
+  "doc": "05-information-security-policy",
+  "q": "How long does my password need to be?",
+  "anchor": "minimum",
+  "fact": "14 characters"
+ },
+ {
+  "doc": "05-information-security-policy",
+  "q": "I clicked a phishing link, how soon must I report it?",
+  "anchor": "report",
+  "fact": "1 hour"
+ },
+ {
+  "doc": "06-data-privacy-policy",
+  "q": "After I leave, how long do you keep my employee file?",
+  "anchor": "personnel file",
+  "fact": "7 years"
+ },
+ {
+  "doc": "06-data-privacy-policy",
+  "q": "Is my boss allowed to look at my salary slip?",
+  "anchor": "payslip",
+  "fact": "Payroll and HR"
+ },
+ {
+  "doc": "06-data-privacy-policy",
+  "q": "In which AWS region is the HR system hosted?",
+  "anchor": "hosted",
+  "fact": "ap-south-1"
+ },
+ {
+  "doc": "07-remote-hybrid-work-policy",
+  "q": "How many days a week must I come to the office?",
+  "anchor": "hybrid",
+  "fact": "2 days/week"
+ },
+ {
+  "doc": "07-remote-hybrid-work-policy",
+  "q": "How much do I get to set up my home desk in India?",
+  "anchor": "setup",
+  "fact": "INR 20,000"
+ },
+ {
+  "doc": "07-remote-hybrid-work-policy",
+  "q": "Can I work from abroad for a few weeks?",
+  "anchor": "another country",
+  "fact": "14 days"
+ },
+ {
+  "doc": "08-travel-reimbursement-policy",
+  "q": "What's the nightly hotel cap in Mumbai or Delhi?",
+  "anchor": "Indian metros",
+  "fact": "INR 8,000"
+ },
+ {
+  "doc": "08-travel-reimbursement-policy",
+  "q": "What's the deadline to submit my expenses?",
+  "anchor": "within",
+  "fact": "60 days"
+ },
+ {
+  "doc": "08-travel-reimbursement-policy",
+  "q": "Who signs off a USD 3,000 expense?",
+  "anchor": "above USD 2,000",
+  "fact": "Finance"
+ },
+ {
+  "doc": "09-performance-management-policy",
+  "q": "I got a 3.9 rating, what raise do I get?",
+  "anchor": "3.8",
+  "fact": "12%"
+ },
+ {
+  "doc": "09-performance-management-policy",
+  "q": "How long do I get on a PIP?",
+  "anchor": "PIP",
+  "fact": "60 days"
+ },
+ {
+  "doc": "09-performance-management-policy",
+  "q": "I disagree with my rating, how long do I have to contest it?",
+  "anchor": "appeal",
+  "fact": "10 days"
+ },
+ {
+  "doc": "10-compensation-benefits-policy",
+  "q": "How big is the annual bonus?",
+  "anchor": "bonus",
+  "fact": "10%"
+ },
+ {
+  "doc": "10-compensation-benefits-policy",
+  "q": "What pension match do Toronto employees get?",
+  "anchor": "Canada",
+  "fact": "RRSP"
+ },
+ {
+  "doc": "10-compensation-benefits-policy",
+  "q": "What's the midpoint pay for a Senior in New York?",
+  "anchor": "senior",
+  "fact": "170,000"
+ },
+ {
+  "doc": "11-learning-development-policy",
+  "q": "My course costs USD 1,500, who needs to approve it?",
+  "anchor": "L&D lead",
+  "fact": "USD 1,000"
+ },
+ {
+  "doc": "11-learning-development-policy",
+  "q": "What courses make up the AI career track?",
+  "anchor": "Data & AI",
+  "fact": "ML Foundations"
+ },
+ {
+  "doc": "11-learning-development-policy",
+  "q": "What if I don't finish compulsory training on time?",
+  "anchor": "overdue",
+  "fact": "promotion"
+ },
+ {
+  "doc": "12-disciplinary-policy",
+  "q": "How long does a written warning stay on file?",
+  "anchor": "written warning",
+  "fact": "12 months"
+ },
+ {
+  "doc": "12-disciplinary-policy",
+  "q": "What happens if I share my login with a coworker?",
+  "anchor": "credentials",
+  "fact": "security training"
+ },
+ {
+  "doc": "12-disciplinary-policy",
+  "q": "How many days of no-show counts as gross misconduct?",
+  "anchor": "unauthorised absence",
+  "fact": "8+"
+ },
+ {
+  "doc": "13-whistleblower-policy",
+  "q": "How do I anonymously report fraud?",
+  "anchor": "hotline",
+  "fact": "ethics@nimbus.example"
+ },
+ {
+  "doc": "13-whistleblower-policy",
+  "q": "How long are fraud reports stored?",
+  "anchor": "kept",
+  "fact": "8 years"
+ },
+ {
+  "doc": "13-whistleblower-policy",
+  "q": "Can I use the ethics channel for a pay dispute?",
+  "anchor": "grievance",
+  "fact": "HR grievance"
+ },
+ {
+  "doc": "14-separation-exit-policy",
+  "q": "When will I get my final dues after leaving?",
+  "anchor": "within",
+  "fact": "45 days"
+ },
+ {
+  "doc": "14-separation-exit-policy",
+  "q": "What's the formula for gratuity?",
+  "anchor": "gratuity",
+  "fact": "15/26"
+ },
+ {
+  "doc": "14-separation-exit-policy",
+  "q": "Can I come back to Nimbus after quitting?",
+  "anchor": "rehire",
+  "fact": "6 months"
+ },
+ {
+  "doc": "15-statutory-compliance-calendar",
+  "q": "When is the Singapore annual employee income form due?",
+  "anchor": "IR8A",
+  "fact": "1 March"
+ },
+ {
+  "doc": "15-statutory-compliance-calendar",
+  "q": "When must Canadian tax slips go out?",
+  "anchor": "T4",
+  "fact": "last day of February"
+ },
+ {
+  "doc": "15-statutory-compliance-calendar",
+  "q": "What's the fine for filing TDS late?",
+  "anchor": "TDS",
+  "fact": "INR 200 per day"
+ },
+ {
+  "doc": "16-holiday-calendar-2026",
+  "q": "Does the Toronto office get Victoria Day off?",
+  "anchor": "Victoria Day",
+  "fact": "18 May"
+ },
+ {
+  "doc": "16-holiday-calendar-2026",
+  "q": "Which day is Diwali off in India this year?",
+  "anchor": "Diwali",
+  "fact": "8 Nov"
+ },
+ {
+  "doc": "16-holiday-calendar-2026",
+  "q": "How many optional holidays can I pick?",
+  "anchor": "floating",
+  "fact": "2"
+ }
+]

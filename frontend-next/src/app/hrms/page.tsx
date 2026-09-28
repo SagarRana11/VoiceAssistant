@@ -242,8 +242,13 @@ export default function HrmsPage() {
                   {m.sources && m.sources.length > 0 && (
                     <ul className="mt-2 flex flex-wrap gap-1.5 pl-4" aria-label="Sources">
                       {m.sources.map((s) => (
-                        <li key={s.doc} className="rounded-md bg-paper px-2 py-0.5 text-xs text-ink-soft">
+                        <li
+                          key={`${s.doc}:${s.section ?? ""}`}
+                          title={s.section ? `${s.title} › ${s.section}` : s.title}
+                          className="max-w-full truncate rounded-md bg-paper px-2 py-0.5 text-xs text-ink-soft"
+                        >
                           {s.title}
+                          {s.section && <span className="text-ink-soft/70"> › {s.section}</span>}
                         </li>
                       ))}
                     </ul>

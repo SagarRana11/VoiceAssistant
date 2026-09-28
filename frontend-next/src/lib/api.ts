@@ -13,7 +13,7 @@ export type ConversationSummary = Omit<Conversation, "messages"> & {
   lastMessage: ChatMessage | null;
 };
 export type RoleId = "general" | "therapist" | "health" | "career" | "fitness" | "hrms";
-export type Source = { doc: string; title: string };
+export type Source = { doc: string; title: string; section?: string };
 
 const TOKEN_KEY = "va_token";
 
