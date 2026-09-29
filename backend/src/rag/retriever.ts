@@ -22,6 +22,31 @@ export async function retrieveExerciseDocs(query: string, topK = 3): Promise<str
 }
 
 /**
+ * Hybrid exercise retrieval: BM25 keyword hits first, then vector (cosine) hits, deduped by doc id.
+ * Returns the combined candidate pool, meant to be reranked by the caller.
+ */
+export async function retrieveExerciseDocsHybrid(
+  query: string,
+  keywordK = 10,
+  vectorK = 15,
+): Promise<string[]> {
+  const keyword = await vectorStore.keywordSearch(query, keywordK);
+  const vector = await vectorStore.similaritySearch(query, vectorK);
+  const seen = new Set<string>();
+  const merged: KnowledgeDoc[] = [];
+  for (const d of [...keyword, ...vector]) {
+    if (!seen.has(d.id)) {
+      seen.add(d.id);
+      merged.push(d);
+    }
+  }
+  console.log(
+    `[RAG:fitness] keyword ${keyword.length}, vector ${vector.length}, merged ${merged.length}`,
+  );
+  return merged.map(formatDoc);
+}
+
+/**
  * Retrieve docs by fitness goal and activity level tags.
  */
 export async function retrieveDocsByProfile(

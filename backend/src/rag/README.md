@@ -71,6 +71,7 @@ User Query
 | Function | Domain | How it works |
 |----------|--------|-------------|
 | `retrieveExerciseDocs(query, topK)` | Exercise | Pure semantic similarity search against the exercise vector store. |
+| `retrieveExerciseDocsHybrid(query, keywordK=10, vectorK=15)` | Exercise | Fitness chat path: BM25 keyword hits (`keywordSearch.ts`, title/tags boosted ×2) first, then cosine hits, deduped by id → caller reranks with Cohere to 5. |
 | `retrieveDocsByProfile(fitnessGoal, activityLevel, hasInjuries, topK)` | Exercise | Builds tags from user profile → tag search with semantic fallback → always appends warmup/safety docs. |
 | `retrieveMeditationDocs(stressLevel, sleepHours, activityLevel, hasExperience, topK)` | Meditation | Maps stress/sleep/experience to tags → tag + semantic search on meditation store. |
 | `retrieveDietDocs(fitnessGoal, dietPreference, diseases, allergies, topK)` | Diet | Maps goal/preference/diseases/allergies to tags → tag + semantic search on diet store. |
@@ -127,3 +128,6 @@ Add a new entry to the appropriate `*Knowledge.ts` file following the `Knowledge
 - **Mock embeddings**: When no OpenAI key is set, a deterministic character-code-based embedding is used. Good enough for keyword-level similarity in dev mode.
 - **PDF parsing at startup**: PDFs are parsed once when the server starts, not on every query.
 - **Stale cleanup**: If you remove a doc from the source, its embedding is automatically deleted from MongoDB on next startup.
+
+## Progress
+- 2026-09-29: fitness `getRagContext` now hybrid — BM25 keyword search → vector search → merge/dedupe → Cohere rerank top 5. Tests: `npx tsx --test src/rag/keywordSearch.test.ts`.

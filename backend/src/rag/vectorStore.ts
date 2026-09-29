@@ -2,6 +2,7 @@ import { EXERCISE_KNOWLEDGE_DOCS, KnowledgeDoc } from './knowledgeSources/exerci
 import { getEmbedding } from './embedder';
 import { loadPdfAsKnowledgeDocs } from './pdfLoader';
 import { loadOrComputeEmbeddings } from './embeddingStore';
+import { Bm25Index } from './keywordSearch';
 
 interface VectorEntry {
   doc: KnowledgeDoc;
@@ -10,6 +11,7 @@ interface VectorEntry {
 
 class InMemoryVectorStore {
   private entries: VectorEntry[] = [];
+  private keywordIndex: Bm25Index = new Bm25Index([]);
   private initialized = false;
   private initPromise: Promise<void> | null = null;
 
@@ -35,6 +37,7 @@ class InMemoryVectorStore {
 
       // Load from MongoDB cache or compute new embeddings
       this.entries = await loadOrComputeEmbeddings('exercise', allDocs);
+      this.keywordIndex = new Bm25Index(this.entries.map(e => e.doc));
 
       this.initialized = true;
       console.log(
@@ -66,6 +69,12 @@ class InMemoryVectorStore {
       .sort((a, b) => b.score - a.score)
       .slice(0, topK)
       .map(s => s.doc);
+  }
+
+  /** BM25 keyword search over title + tags + content; only docs sharing a query term. */
+  async keywordSearch(query: string, topK = 10): Promise<KnowledgeDoc[]> {
+    await this.initialize();
+    return this.keywordIndex.search(query, topK);
   }
 
   /** Tag-filtered search: tries tag match first, falls back to semantic */

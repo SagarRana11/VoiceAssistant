@@ -3,7 +3,11 @@ import Conversation from '../models/Conversation';
 import { streamOpenAI, ChatMessage } from '../services/openaiService';
 import { AuthRequest } from '../middleware/auth';
 import { ROLES } from '../constants/roles';
-import { retrieveExerciseDocs, retrieveDietDocs, retrieveMeditationDocs } from '../rag/retriever';
+import {
+  retrieveExerciseDocsHybrid,
+  retrieveDietDocs,
+  retrieveMeditationDocs,
+} from '../rag/retriever';
 import { rewriteQueryForRetrieval } from '../rag/queryRewriter';
 import { rerankDocs } from '../rag/reRanker';
 
@@ -16,12 +20,11 @@ async function getRagContext(
     if (roleId === 'fitness') {
       //  rewriting //
       const query = await rewriteQueryForRetrieval(message, 'fitness', history);
-      // retrival of documents
-      const candidates = await retrieveExerciseDocs(query, 15); // fetch wide
-      console.log('candidates>>>', candidates);
-      // reranking
-      const docs = await rerankDocs(query, candidates, 5); // rerank narrow
-      console.log('docs>>>', docs);
+      // retrieval: keyword (BM25) hits, then vector hits, merged + deduped
+      const candidates = await retrieveExerciseDocsHybrid(query);
+      // rerank the combined pool → most relevant 5
+      const docs = await rerankDocs(query, candidates, 5);
+      console.log(`[RAG:fitness] reranked ${candidates.length} → ${docs.length}`);
       if (docs.length === 0) return '';
       return '\n\n=== RELEVANT FITNESS KNOWLEDGE ===\n' + docs.join('\n\n');
     }
